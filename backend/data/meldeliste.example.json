@@ -1,0 +1,4 @@
+[
+  { "ra": 1, "nachname": "Mustermann", "vorname": "Max", "id": "12345678", "lk": 10.0 },
+  { "ra": 2, "nachname": "Musterfrau", "vorname": "Erika", "id": "87654321", "lk": 15.0 }
+]

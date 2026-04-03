@@ -5,3 +5,8 @@ dist/
 .env.production
 .aws-sam/
 .DS_Store
+
+# Sensible Daten — nie committen
+backend/data/meldeliste*.json
+!backend/data/meldeliste.example.json
+backend/clubapp-backup*.json
