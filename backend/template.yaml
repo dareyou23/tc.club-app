@@ -1,0 +1,923 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Tennis-Trainings-Runden Backend v2 - Delete Spieler
+
+Parameters:
+  JWTSecret:
+    Type: String
+    NoEcho: true
+    Default: 'dev-secret-please-change-in-production'
+    Description: Secret key for JWT signing
+  AllowedOrigin:
+    Type: String
+    Default: '*'
+    Description: Allowed CORS origin
+  DeployVersion:
+    Type: String
+    Default: 'v2-cors-preflight-fix'
+    Description: Deployment version tag
+  SESFromEmail:
+    Type: String
+    Default: 'noreply@training.de'
+    Description: Absender-Adresse für System-Mails
+  FrontendUrl:
+    Type: String
+    Default: 'https://tennis-training.vercel.app'
+    Description: URL des Frontends für Links in E-Mails
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs22.x
+    MemorySize: 256
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref ClubAppTable
+        CORS_ORIGIN: !Ref AllowedOrigin
+        JWT_SECRET: !Ref JWTSecret
+        SES_FROM_EMAIL: !Ref SESFromEmail
+        FRONTEND_URL: !Ref FrontendUrl
+    Architectures:
+      - arm64
+
+Resources:
+  # DynamoDB Table (eigene Tabelle für Datenisolierung)
+  ClubAppTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: ClubApp
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+        - AttributeName: GSI2PK
+          AttributeType: S
+        - AttributeName: GSI2SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: GSI2
+          KeySchema:
+            - AttributeName: GSI2PK
+              KeyType: HASH
+            - AttributeName: GSI2SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  ClubAppApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      MinimumCompressionSize: 1024
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+        AllowCredentials: false
+        MaxAge: "'600'"
+      GatewayResponses:
+        DEFAULT_4XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+              Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        DEFAULT_5XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+              Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        UNAUTHORIZED:
+          StatusCode: 401
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+              Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+      MethodSettings:
+        - ResourcePath: "/*"
+          HttpMethod: "*"
+          ThrottlingRateLimit: 50
+          ThrottlingBurstLimit: 100
+        - ResourcePath: "/auth/login"
+          HttpMethod: "POST"
+          ThrottlingRateLimit: 5
+          ThrottlingBurstLimit: 10
+      Auth:
+        DefaultAuthorizer: JWTAuthorizer
+        AddDefaultAuthorizerToCorsPreflight: false
+        Authorizers:
+          JWTAuthorizer:
+            FunctionArn: !GetAtt AuthorizerFunction.Arn
+            FunctionPayloadType: TOKEN
+            Identity:
+              Header: Authorization
+              ValidationExpression: "^Bearer [-0-9a-zA-Z\\._]*$"
+              ReauthorizeEvery: 300
+
+  # Authorizer
+  AuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/authorizer.handler
+      Environment:
+        Variables:
+          JWT_SECRET: !Ref JWTSecret
+
+  # Auth (Login/Logout/Password - no authorizer)
+  AuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/auth.handler
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /auth/login
+            Method: post
+            Auth:
+              Authorizer: NONE
+        Logout:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /auth/logout
+            Method: post
+            Auth:
+              Authorizer: NONE
+        PasswortVergessen:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /auth/passwort-vergessen
+            Method: post
+            Auth:
+              Authorizer: NONE
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+              Resource: '*'
+
+  # Auth (geschützte Endpunkte - mit Authorizer)
+  AuthProtectedFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/auth.handler
+      Events:
+        ChangePassword:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /auth/change-password
+            Method: post
+        ResetPassword:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /auth/reset-password
+            Method: post
+        Impersonate:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /auth/impersonate
+            Method: post
+        Erstanmeldung:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /auth/erstanmeldung
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  # Saison
+  ListSaisonsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/saison.listSaisons
+      Events:
+        ListSaisons:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /saisons
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+  GetAktiveSaisonFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/saison.getAktiveSaison
+      Events:
+        GetAktiveSaison:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /saisons/aktiv
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+  CreateSaisonFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/saison.createSaison
+      Events:
+        CreateSaison:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /saisons
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  AktiviereSaisonFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/saison.aktiviereSaison
+      Events:
+        AktiviereSaison:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /saisons/{id}/aktivieren
+            Method: put
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  EnsureSaisonsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/saison.ensureSaisons
+      Events:
+        EnsureSaisons:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /saisons/ensure
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  # Scheduled: prüft alle 4 Wochen ob neue Saisons angelegt werden müssen
+  ScheduledEnsureSaisonsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/saison.scheduledEnsureSaisons
+      Events:
+        SaisonCheck:
+          Type: Schedule
+          Properties:
+            Schedule: rate(28 days)
+            Description: Prüft alle 4 Wochen ob neue Saisons angelegt werden müssen
+            Enabled: true
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  # Hallenplatz
+  ListPlaetzeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/platz.listPlaetze
+      Events:
+        ListPlaetze:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /plaetze
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+  CreatePlatzFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/platz.createPlatz
+      Events:
+        CreatePlatz:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /plaetze
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  GetPlatzFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/platz.getPlatz
+      Events:
+        GetPlatz:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /plaetze/{id}
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+  UpdatePlatzFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/platz.updatePlatz
+      Events:
+        UpdatePlatz:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /plaetze/{id}
+            Method: put
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  DeletePlatzFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/platz.deletePlatz
+      Events:
+        DeletePlatz:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /plaetze/{id}
+            Method: delete
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  GetPlatzSlotsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/platz.getPlatzSlots
+      Events:
+        GetPlatzSlots:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /plaetze/{id}/slots
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+  # Buchungsgruppe
+  GetGruppeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/gruppe.getGruppe
+      Events:
+        GetGruppe:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /plaetze/{id}/gruppe
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+  AddToGruppeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/gruppe.addToGruppe
+      Events:
+        AddToGruppe:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /plaetze/{id}/gruppe
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  RemoveFromGruppeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/gruppe.removeFromGruppe
+      Events:
+        RemoveFromGruppe:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /plaetze/{id}/gruppe/{spielerId}
+            Method: delete
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  # Verfügbarkeit
+  GetSlotVerfuegbarkeitFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/verfuegbarkeit.getSlotVerfuegbarkeit
+      Events:
+        GetSlotVerfuegbarkeit:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /slots/{slotId}/verfuegbarkeit
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+  SetVerfuegbarkeitFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/verfuegbarkeit.setVerfuegbarkeit
+      Events:
+        SetVerfuegbarkeit:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /verfuegbarkeit/{slotId}
+            Method: put
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  # Zuweisung
+  BerechneZuweisungFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/zuweisung.berechneZuweisung
+      Events:
+        BerechneZuweisung:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /zuweisungen/berechnen
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  GetSlotZuweisungenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/zuweisung.getSlotZuweisungen
+      Events:
+        GetSlotZuweisungen:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /slots/{slotId}/zuweisungen
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+  SchliesseSlotAbFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/zuweisung.schliesseSlotAb
+      Events:
+        SchliesseSlotAb:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /slots/{slotId}/abschliessen
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  ToggleZuweisungFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/zuweisung.toggleZuweisung
+      Events:
+        ToggleZuweisung:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /slots/{slotId}/zuweisungen/{spielerId}
+            Method: put
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  # Spontan-Anmeldung
+  AnmeldenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/anmeldung.anmelden
+      Events:
+        Anmelden:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /slots/{slotId}/anmelden
+            Method: post
+        AnmeldenHalb:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /slots/{slotId}/anmelden/halb
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  AbmeldenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/anmeldung.abmelden
+      Events:
+        Abmelden:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /slots/{slotId}/anmelden
+            Method: delete
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  # Spieler
+  ListSpielerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/spieler.listSpieler
+      Events:
+        ListSpieler:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /spieler
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+  CreateSpielerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/spieler.createSpieler
+      Events:
+        CreateSpieler:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /spieler
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  UpdateSpielerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/spieler.updateSpieler
+      Events:
+        UpdateSpieler:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /spieler/{id}
+            Method: put
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  DeaktiviereSpielerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/spieler.deaktiviereSpieler
+      Events:
+        DeaktiviereSpieler:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /spieler/{id}/deaktivieren
+            Method: put
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  DeleteSpielerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/spieler.deleteSpieler
+      Events:
+        DeleteSpieler:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /spieler/{id}
+            Method: delete
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  # Profil
+  GetProfilFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/profil.getProfil
+      Events:
+        GetProfil:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /profil
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+  UpdateProfilFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/profil.updateProfil
+      Events:
+        UpdateProfil:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /profil
+            Method: put
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  # Kosten
+  MeinKostenkontoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/kosten.getMeinKostenkonto
+      Events:
+        MeinKostenkonto:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /kosten/mein-konto
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+  GruppenKostenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/kosten.getGruppenKosten
+      Events:
+        GruppenKosten:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /kosten/gruppe/{id}
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+  # Benachrichtigungen
+  GetBenachrichtigungenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/benachrichtigung.getBenachrichtigungen
+      Events:
+        GetBenachrichtigungen:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /benachrichtigungen
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+  MarkGelesenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/benachrichtigung.markAsGelesen
+      Events:
+        MarkGelesen:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /benachrichtigungen/gelesen
+            Method: put
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  UnreadCountFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/benachrichtigung.getUnreadCount
+      Events:
+        UnreadCount:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /benachrichtigungen/ungelesen/count
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+  SendNachrichtFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/benachrichtigung.sendNachricht
+      Events:
+        SendNachricht:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /benachrichtigungen/senden
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  # --- Meden ---
+
+  ListMedenSpieltageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/meden-spieltage.listMedenSpieltage
+      Events:
+        ListMedenSpieltage:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /meden/spieltage
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+  GetAllMedenVerfuegbarkeitFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/meden-spieltage.getAllMedenVerfuegbarkeit
+      Events:
+        GetAllMedenVerfuegbarkeit:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /meden/verfuegbarkeit/alle
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+  SetMedenVerfuegbarkeitFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/meden-verfuegbarkeit.setMedenVerfuegbarkeit
+      Events:
+        SetMedenVerfuegbarkeit:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /meden/verfuegbarkeit
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  GetAufstellungFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/meden-aufstellung.getAufstellung
+      Events:
+        GetAufstellung:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /meden/aufstellung/{spieltagId}
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+  SetAufstellungFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/meden-aufstellung.setAufstellung
+      Events:
+        SetAufstellung:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /meden/aufstellung/{spieltagId}
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+
+  GetFestspielStatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/meden-aufstellung.getFestspielStatus
+      Events:
+        GetFestspielStatus:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /meden/festspiel-status
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ClubAppTable
+
+Outputs:
+  ClubAppApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub "https://${ClubAppApi}.execute-api.${AWS::Region}.amazonaws.com/prod/"
