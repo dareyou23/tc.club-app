@@ -4,8 +4,8 @@ import { AuthProvider } from '@/lib/AuthContext';
 import Navigation from '@/components/Navigation';
 
 export const metadata: Metadata = {
-  title: 'Hallenplatz-Training',
-  description: 'Verwaltung von Hallenplatz-Trainings',
+  title: 'Tennis-Club-App',
+  description: 'Verwaltung von Trainings und Mannschaften',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
