@@ -16,7 +16,65 @@ class ApiClient {
     }
   }
 
+  private refreshInProgress: Promise<boolean> | null = null;
+
+  // Token automatisch erneuern wenn er bald abläuft (< 60 Sekunden)
+  private async ensureValidToken(): Promise<void> {
+    if (!this.token || !this.refreshToken) return;
+    if (Date.now() < this.tokenExpiresAt - 60_000) return; // noch gültig
+
+    // Nur ein Refresh gleichzeitig
+    if (this.refreshInProgress) { await this.refreshInProgress; return; }
+
+    this.refreshInProgress = (async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken: this.refreshToken }),
+        });
+        if (!res.ok) { this.handleRefreshFailure(); return false; }
+        const data = await res.json();
+        if (data.success && data.data) {
+          this.token = data.data.accessToken;
+          this.tokenExpiresAt = Date.now() + (data.data.expiresIn * 1000);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('training_token', this.token!);
+            localStorage.setItem('training_token_expires_at', this.tokenExpiresAt.toString());
+          }
+          return true;
+        }
+        this.handleRefreshFailure();
+        return false;
+      } catch {
+        this.handleRefreshFailure();
+        return false;
+      } finally {
+        this.refreshInProgress = null;
+      }
+    })();
+
+    await this.refreshInProgress;
+  }
+
+  private handleRefreshFailure(): void {
+    // Refresh fehlgeschlagen — User muss sich neu einloggen
+    this.token = null;
+    this.refreshToken = null;
+    this.tokenExpiresAt = 0;
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('training_token');
+      localStorage.removeItem('training_refresh_token');
+      localStorage.removeItem('training_token_expires_at');
+      localStorage.removeItem('training_user');
+      window.location.href = '/';
+    }
+  }
+
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+    // Token vor jedem Request prüfen/erneuern
+    await this.ensureValidToken();
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string> || {}),

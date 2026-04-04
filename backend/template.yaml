@@ -6,11 +6,11 @@ Parameters:
   JWTSecret:
     Type: String
     NoEcho: true
-    Default: 'dev-secret-please-change-in-production'
-    Description: Secret key for JWT signing
+    # Kein Default — muss beim Deployment explizit gesetzt werden
+    Description: "REQUIRED: Secret key for JWT signing (openssl rand -base64 32)"
   AllowedOrigin:
     Type: String
-    Default: '*'
+    Default: 'https://tennis-training.vercel.app'
     Description: Allowed CORS origin
   DeployVersion:
     Type: String
@@ -37,6 +37,7 @@ Globals:
         JWT_SECRET: !Ref JWTSecret
         SES_FROM_EMAIL: !Ref SESFromEmail
         FRONTEND_URL: !Ref FrontendUrl
+        STAGE: 'prod'
     Architectures:
       - arm64
 
@@ -129,6 +130,14 @@ Resources:
           HttpMethod: "POST"
           ThrottlingRateLimit: 5
           ThrottlingBurstLimit: 10
+        - ResourcePath: "/auth/passwort-vergessen"
+          HttpMethod: "POST"
+          ThrottlingRateLimit: 3
+          ThrottlingBurstLimit: 5
+        - ResourcePath: "/auth/reset-password"
+          HttpMethod: "POST"
+          ThrottlingRateLimit: 3
+          ThrottlingBurstLimit: 5
       Auth:
         DefaultAuthorizer: JWTAuthorizer
         AddDefaultAuthorizerToCorsPreflight: false
@@ -139,7 +148,7 @@ Resources:
             Identity:
               Header: Authorization
               ValidationExpression: "^Bearer [-0-9a-zA-Z\\._]*$"
-              ReauthorizeEvery: 300
+              ReauthorizeEvery: 60
 
   # Authorizer
   AuthorizerFunction:
@@ -182,6 +191,14 @@ Resources:
             Method: post
             Auth:
               Authorizer: NONE
+        Refresh:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ClubAppApi
+            Path: /auth/refresh
+            Method: post
+            Auth:
+              Authorizer: NONE
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref ClubAppTable
@@ -189,7 +206,7 @@ Resources:
             - Effect: Allow
               Action:
                 - ses:SendEmail
-              Resource: '*'
+              Resource: !Sub 'arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/*'
 
   # Auth (geschützte Endpunkte - mit Authorizer)
   AuthProtectedFunction:

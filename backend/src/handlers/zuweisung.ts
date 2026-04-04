@@ -202,9 +202,16 @@ export async function toggleZuweisung(event: APIGatewayProxyEvent): Promise<APIG
     const userId = event.requestContext.authorizer?.userId;
     if (!userId) return errorResponse('Nicht autorisiert', 401);
 
+    const rolle = event.requestContext.authorizer?.rolle;
     const slotId = event.pathParameters?.slotId;
     const spielerId = event.pathParameters?.spielerId;
     if (!slotId || !spielerId) return errorResponse('Slot ID und Spieler ID erforderlich');
+
+    // Nur Verwalter/Admin dürfen fremde Zuweisungen ändern
+    const isAdmin = rolle === 'trainings_verwalter' || rolle === 'admin';
+    if (!isAdmin && spielerId !== userId) {
+      return errorResponse('Nicht autorisiert — nur eigene Zuweisungen änderbar', 403);
+    }
 
     const slot = await getItem(`TRAINING_SLOT#${slotId}`, 'METADATA');
     if (!slot) return errorResponse('Slot nicht gefunden', 404);

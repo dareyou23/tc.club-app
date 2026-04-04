@@ -11,7 +11,10 @@ const CreateSpielerSchema = z.object({
   name: z.string().min(1).max(100),
   vorname: z.string().min(1).max(100),
   email: z.string().email().max(255),
-  password: z.string().min(8).max(100),
+  password: z.string().min(8).max(100)
+    .regex(/[A-Z]/, 'Mindestens ein Großbuchstabe erforderlich')
+    .regex(/[a-z]/, 'Mindestens ein Kleinbuchstabe erforderlich')
+    .regex(/\d/, 'Mindestens eine Ziffer erforderlich'),
   rolle: z.enum(['spieler', 'trainings_verwalter', 'club_manager', 'admin']),
 });
 
@@ -119,7 +122,11 @@ const UpdateSpielerSchema = z.object({
   rolle: z.enum(['spieler', 'trainings_verwalter', 'club_manager', 'admin']).optional(),
   aktiv: z.boolean().optional(),
   telefon: z.string().max(30).optional(),
-  password: z.string().min(8).max(100).optional(),
+  password: z.string().min(8).max(100)
+    .regex(/[A-Z]/, 'Mindestens ein Großbuchstabe erforderlich')
+    .regex(/[a-z]/, 'Mindestens ein Kleinbuchstabe erforderlich')
+    .regex(/\d/, 'Mindestens eine Ziffer erforderlich')
+    .optional(),
   kern: z.number().min(1).max(4).nullable().optional(),
   mannschaftsfuehrer: z.boolean().optional(),
 });

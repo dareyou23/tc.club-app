@@ -15,13 +15,17 @@ const LoginSchema = z.object({
 
 const ChangePasswordSchema = z.object({
   currentPassword: z.string().min(1).max(100),
-  newPassword: z.string().min(8).max(100),
+  newPassword: z.string().min(8).max(100)
+    .regex(/[A-Z]/, 'Mindestens ein Großbuchstabe erforderlich')
+    .regex(/[a-z]/, 'Mindestens ein Kleinbuchstabe erforderlich')
+    .regex(/\d/, 'Mindestens eine Ziffer erforderlich'),
 });
 
 export async function handler(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
   try {
     const path = event.path;
     if (path.endsWith('/login')) return handleLogin(event);
+    if (path.endsWith('/refresh')) return handleRefresh(event);
     if (path.endsWith('/logout')) return handleLogout();
     if (path.endsWith('/change-password')) return handleChangePassword(event);
     if (path.endsWith('/reset-password')) return handleResetPassword(event);
@@ -58,13 +62,13 @@ async function handleLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxy
   const accessToken = jwt.sign(
     { id: user.id, email: user.email, rolle: user.rolle },
     jwtSecret,
-    { expiresIn: '1h' }
+    { expiresIn: '15m' }
   );
 
   const refreshToken = jwt.sign(
     { id: user.id, email: user.email, rolle: user.rolle, type: 'refresh' },
     jwtSecret,
-    { expiresIn: '30d' }
+    { expiresIn: '7d' }
   );
 
   // Load spieler profile
@@ -77,7 +81,7 @@ async function handleLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxy
   return successResponse({
     accessToken,
     refreshToken,
-    expiresIn: 3600,
+    expiresIn: 900,
     user: {
       id: user.id,
       email: user.email,
@@ -95,6 +99,36 @@ async function handleLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxy
 
 async function handleLogout(): Promise<APIGatewayProxyResult> {
   return messageResponse('Erfolgreich abgemeldet');
+}
+
+async function handleRefresh(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+  if (!event.body) return errorResponse('Request body required');
+
+  const RefreshSchema = z.object({ refreshToken: z.string().min(1) });
+  const body = RefreshSchema.parse(JSON.parse(event.body));
+
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) throw new Error('JWT_SECRET environment variable is not set');
+
+  try {
+    const decoded = jwt.verify(body.refreshToken, jwtSecret) as { id: string; email: string; rolle: string; type?: string };
+    if (decoded.type !== 'refresh') return errorResponse('Ungültiger Token-Typ', 401);
+
+    // Prüfe ob User noch aktiv ist
+    const user = await getItem(`TRAINING_USER#${decoded.id}`, 'AUTH');
+    if (!user || !user.aktiv) return errorResponse('Konto deaktiviert', 403);
+
+    // Aktuelle Rolle aus DB nehmen (falls geändert seit Token-Erstellung)
+    const accessToken = jwt.sign(
+      { id: decoded.id, email: user.email, rolle: user.rolle },
+      jwtSecret,
+      { expiresIn: '15m' }
+    );
+
+    return successResponse({ accessToken, expiresIn: 900 });
+  } catch {
+    return errorResponse('Refresh-Token ungültig oder abgelaufen', 401);
+  }
 }
 
 async function handleChangePassword(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
@@ -183,12 +217,19 @@ async function handleResetPassword(event: APIGatewayProxyEvent): Promise<APIGate
 }
 
 async function handleImpersonate(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+  // Impersonate nur in lokaler Entwicklung erlaubt
+  const stage = process.env.STAGE || 'prod';
+  if (stage !== 'local') {
+    return errorResponse('Impersonierung ist nur in der lokalen Entwicklung verfügbar', 403);
+  }
+
   const rolle = event.requestContext.authorizer?.rolle;
   if (rolle !== 'admin') return errorResponse('Nur Admins können Spieler impersonieren', 403);
 
   if (!event.body) return errorResponse('Request body required');
-  const { spielerId } = JSON.parse(event.body);
-  if (!spielerId) return errorResponse('spielerId erforderlich');
+  const ImpersonateSchema = z.object({ spielerId: z.string().min(1) });
+  const body = ImpersonateSchema.parse(JSON.parse(event.body));
+  const spielerId = body.spielerId;
 
   // Load target user
   const user = await getItem(`TRAINING_USER#${spielerId}`, 'AUTH');
@@ -228,7 +269,10 @@ async function handleImpersonate(event: APIGatewayProxyEvent): Promise<APIGatewa
 
 const ErstanmeldungSchema = z.object({
   currentPassword: z.string().min(1).max(100),
-  newPassword: z.string().min(8).max(100),
+  newPassword: z.string().min(8).max(100)
+    .regex(/[A-Z]/, 'Mindestens ein Großbuchstabe erforderlich')
+    .regex(/[a-z]/, 'Mindestens ein Kleinbuchstabe erforderlich')
+    .regex(/\d/, 'Mindestens eine Ziffer erforderlich'),
   email: z.string().email().max(255),
   telefon: z.string().min(5).max(30),
 });
