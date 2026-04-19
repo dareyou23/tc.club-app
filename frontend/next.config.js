@@ -2,13 +2,15 @@
 const nextConfig = {
   reactStrictMode: true,
   async headers() {
+    const isDev = process.env.NODE_ENV === 'development';
+    const connectSrc = isDev
+      ? "connect-src 'self' https://*.execute-api.eu-central-1.amazonaws.com http://localhost:*"
+      : "connect-src 'self' https://*.execute-api.eu-central-1.amazonaws.com";
+
     return [
       {
         source: '/:path*',
         headers: [
-          // CSP: Nur eigenes Script + Styles erlauben, API-Calls nur an unsere API
-          // 'unsafe-inline' für style-src nötig wegen Tailwind/Next.js
-          // connect-src: eigene Domain + API Gateway
           {
             key: 'Content-Security-Policy',
             value: [
@@ -17,7 +19,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data:",
               "font-src 'self'",
-              "connect-src 'self' https://*.execute-api.eu-central-1.amazonaws.com http://localhost:*",
+              connectSrc,
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
