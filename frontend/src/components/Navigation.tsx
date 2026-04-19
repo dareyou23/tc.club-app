@@ -12,6 +12,7 @@ export default function Navigation() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [hatTrainingsgruppe, setHatTrainingsgruppe] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -24,20 +25,40 @@ export default function Navigation() {
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
+  // Prüfe ob Spieler in mindestens einer Buchungsgruppe ist
+  useEffect(() => {
+    if (!isAuthenticated || !currentUser) return;
+    if (isVerwalter || isMF) { setHatTrainingsgruppe(true); return; }
+    const check = async () => {
+      const res = await apiClient.listPlaetze();
+      if (!res.success || !res.data) return;
+      for (const p of res.data) {
+        const gRes = await apiClient.getGruppe(p.id);
+        if (gRes.success && gRes.data?.some((g: any) => g.spielerId === currentUser.id)) {
+          setHatTrainingsgruppe(true);
+          return;
+        }
+      }
+    };
+    check();
+  }, [isAuthenticated, currentUser]);
+
   if (!isAuthenticated) return null;
 
   const rolle = currentUser?.rolle;
   const isVerwalter = rolle === 'trainings_verwalter' || rolle === 'club_manager' || rolle === 'admin';
   const isMF = currentUser?.mannschaftsfuehrer === true;
 
+  const istGemeldet = !!currentUser?.setzlistePosition;
+
   // Links OHNE Benachrichtigungen (die kommen separat als Badge)
   const links = [
-    { href: '/', label: 'Termine', show: true },
-    { href: '/meden/spieltage', label: 'Meden', show: true },
+    { href: '/', label: 'Termine', show: hatTrainingsgruppe },
+    { href: '/meden/spieltage', label: 'Meden', show: istGemeldet },
     { href: '/meden/aufstellung', label: 'Aufstellung', show: isMF || isVerwalter },
     { href: '/meden/matrix', label: 'Matrix', show: isMF || isVerwalter },
-    { href: '/meden/festspiel', label: 'Festspiel', show: isMF || isVerwalter },
-    { href: '/verfuegbarkeit/saisonplanung', label: 'Trainings-Planung', show: true },
+    { href: '/meden/festspiel', label: 'Festspiel', show: istGemeldet },
+    { href: '/verfuegbarkeit/saisonplanung', label: 'Trainings-Planung', show: hatTrainingsgruppe },
     { href: '/profil', label: 'Profil', show: true },
     { href: '/verwaltung/plaetze', label: 'Trainings', show: isMF || isVerwalter },
     { href: '/admin/spieler', label: 'Spieler', show: isMF || isVerwalter },

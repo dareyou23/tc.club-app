@@ -91,6 +91,7 @@ async function handleLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxy
       aktiv: user.aktiv,
       mannschaftsfuehrer: spieler?.mannschaftsfuehrer || false,
       kern: spieler?.kern || null,
+      setzlistePosition: spieler?.setzlistePosition || null,
       passwordChangeRequired: user.passwordChangeRequired || false,
       passwordResetRequired: user.passwordResetRequired || false,
     },

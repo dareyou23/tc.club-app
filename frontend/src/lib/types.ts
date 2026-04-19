@@ -12,6 +12,7 @@ export interface TrainingUser {
   aktiv: boolean;
   mannschaftsfuehrer?: boolean;
   kern?: number | null;
+  setzlistePosition?: number | null;
   passwordChangeRequired: boolean;
   passwordResetRequired?: boolean;
 }
