@@ -55,12 +55,12 @@ export default function LoginPage() {
           <Image
             src="/ClubLogo.jpg"
             alt="Club Logo"
-            width={200}
-            height={200}
+            width={280}
+            height={280}
             className="rounded-full object-cover mb-4 drop-shadow-lg"
             priority
           />
-          <h1 className="text-3xl font-bold text-blue-600">Trainings-Planer</h1>
+          <h1 className="text-3xl font-bold text-blue-600">TC-Dormagen Club App</h1>
         </div>
 
         {!showPwVergessen ? (
