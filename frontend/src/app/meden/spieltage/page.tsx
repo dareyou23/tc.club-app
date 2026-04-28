@@ -47,13 +47,11 @@ export default function MedenSpieltagePage() {
 
   const myId = currentUser?.id;
 
-  const getStatus = (spieltagId: string, spielerId: string): VerfStatus => {
-    return (verf[spieltagId]?.[spielerId] || '') as VerfStatus;
-  };
+  const getStatus = (spieltagId: string, spielerId: string): VerfStatus =>
+    (verf[spieltagId]?.[spielerId] || '') as VerfStatus;
 
   const setStatus = async (spieltagId: string, status: VerfStatus) => {
     if (!myId) return;
-    // Optimistic update
     setVerf(prev => {
       const next = { ...prev };
       if (!next[spieltagId]) next[spieltagId] = {};
@@ -61,9 +59,7 @@ export default function MedenSpieltagePage() {
       return next;
     });
     const res = await apiClient.setMedenVerfuegbarkeit(spieltagId, status);
-    if (!res.success) {
-      alert('Fehler beim Speichern');
-    }
+    if (!res.success) alert('Fehler beim Speichern');
   };
 
   const getZusagen = (spieltagId: string) =>
@@ -72,12 +68,13 @@ export default function MedenSpieltagePage() {
   const getUnsichere = (spieltagId: string) =>
     spieler.filter(s => getStatus(spieltagId, s.id) === 'vielleicht').sort((a, b) => (a.setzlistePosition || 99) - (b.setzlistePosition || 99));
 
-  if (!loaded) return <div className="text-center py-12 text-gray-500">Laden...</div>;
+  if (!loaded) return (
+    <div className="flex items-center justify-center py-16">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+    </div>
+  );
 
   const meineKern = currentUser?.kern || null;
-  const kernSpieltage = meineKern ? spieltage.filter(st => st.mannschaft === meineKern) : [];
-  const andereSpieltage = meineKern ? spieltage.filter(st => st.mannschaft !== meineKern) : spieltage;
-
   const mannschaftLabel = (m?: number) => m ? `${m}. Mannschaft` : '';
 
   const renderSpieltag = (st: Spieltag) => {
@@ -85,47 +82,80 @@ export default function MedenSpieltagePage() {
     const zusagen = getZusagen(st.id);
     const unsichere = getUnsichere(st.id);
     const zuWenig = zusagen.length < 6;
-    const genug = zusagen.length >= 6;
-    const cardClass = zuWenig ? 'bg-red-50 border-2 border-red-200' : genug ? 'bg-green-50 border-2 border-green-200' : 'bg-white';
+
+    const borderColor = zuWenig ? 'border-red-400' : 'border-emerald-400';
+    const countBadge = zuWenig
+      ? 'bg-red-100 text-red-700'
+      : 'bg-emerald-100 text-emerald-700';
 
     return (
-      <div key={st.id} className={`rounded-lg shadow p-4 ${cardClass}`}>
-        <div className="flex justify-between items-start mb-2">
+      <div key={st.id} className={`card-accent p-5 ${borderColor}`}>
+        {/* Header */}
+        <div className="flex justify-between items-start mb-4">
           <div>
-            <p className="font-semibold text-gray-800">{mannschaftLabel(st.mannschaft)} · {formatDatum(st.datum)} {st.uhrzeit}</p>
-            <p className="text-sm text-gray-600">Nr. {st.nr} · {st.heimspiel ? '🏠 Heim' : '🚗 Auswärts'} · vs {st.gegner}</p>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="badge bg-blue-100 text-blue-700">M{st.mannschaft}</span>
+              <span className="text-xs text-gray-400">Nr. {st.nr}</span>
+            </div>
+            <p className="font-semibold text-gray-900">{formatDatum(st.datum)} · {st.uhrzeit}</p>
+            <p className="text-sm text-gray-500 mt-0.5">
+              {st.heimspiel ? '🏠 Heim' : '🚗 Auswärts'} vs {st.gegner}
+            </p>
           </div>
-          <span className={`text-sm font-medium px-2 py-1 rounded ${zuWenig ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-            {zusagen.length}/6
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={`badge ${countBadge} text-base`}>
+              {zusagen.length}/6
+            </span>
+            <button type="button" onClick={() => downloadICS(st)}
+              className="p-2 rounded-lg bg-gray-50 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+              title="Kalender-Download">
+              📅
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2 mb-3">
-          <button type="button" onClick={() => { setStatus(st.id, 'ja'); downloadICS(st); }}
-            className={`flex-1 py-2 rounded text-sm font-medium transition ${myStatus === 'ja' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-green-100'}`}>
-            ✅ Dabei
-          </button>
-          <button type="button" onClick={() => setStatus(st.id, 'vielleicht')}
-            className={`flex-1 py-2 rounded text-sm font-medium transition ${myStatus === 'vielleicht' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-yellow-100'}`}>
-            ❓ Unsicher
-          </button>
-          <button type="button" onClick={() => setStatus(st.id, 'nein')}
-            className={`flex-1 py-2 rounded text-sm font-medium transition ${myStatus === 'nein' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-red-100'}`}>
-            ❌ Nein
-          </button>
-          <button type="button" onClick={() => downloadICS(st)}
-            className="py-2 px-3 rounded text-sm bg-gray-100 text-gray-600 hover:bg-blue-100" title="Kalender-Download">
-            📅
-          </button>
+
+        {/* Status-Buttons */}
+        <div className="flex gap-2 mb-4">
+          {([
+            { value: 'ja' as VerfStatus, label: '✅ Dabei', active: 'bg-emerald-600 text-white shadow-sm', inactive: 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100' },
+            { value: 'vielleicht' as VerfStatus, label: '❓ Unsicher', active: 'bg-amber-500 text-white shadow-sm', inactive: 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100' },
+            { value: 'nein' as VerfStatus, label: '❌ Nein', active: 'bg-red-600 text-white shadow-sm', inactive: 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100' },
+          ]).map(btn => (
+            <button key={btn.value} type="button"
+              onClick={() => { setStatus(st.id, btn.value); if (btn.value === 'ja') downloadICS(st); }}
+              className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all active:scale-[0.98] ${
+                myStatus === btn.value ? btn.active : btn.inactive
+              }`}>
+              {btn.label}
+            </button>
+          ))}
         </div>
+
+        {/* Zusagen */}
         {zusagen.length > 0 && (
-          <div className="border-t border-gray-200 pt-2">
-            <p className="text-xs text-gray-500 mb-1">Dabei ({zusagen.length}):</p>
-            <p className="text-sm text-gray-700">{zusagen.map(s => `${s.vorname} ${s.name}`).join(', ')}</p>
+          <div className="pt-3 border-t border-gray-100">
+            <p className="section-title mb-2">Dabei ({zusagen.length})</p>
+            <div className="flex flex-wrap gap-1.5">
+              {zusagen.map(s => (
+                <span key={s.id} className="badge bg-emerald-50 text-emerald-700">
+                  {s.vorname} {s.name}
+                </span>
+              ))}
+            </div>
           </div>
         )}
+
+        {/* Unsichere */}
         {unsichere.length > 0 && (
-          <div className="mt-1">
-            <p className="text-xs text-gray-400">Unsicher: {unsichere.map(s => `${s.vorname} ${s.name}`).join(', ')}</p>
+          <div className="mt-3">
+            <p className="section-title mb-2">Unsicher ({unsichere.length})</p>
+            <div className="flex flex-wrap gap-1.5">
+              {unsichere.map(s => (
+                <span key={s.id} className="badge bg-amber-50 text-amber-600">
+                  {s.vorname} {s.name}
+                </span>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -138,37 +168,56 @@ export default function MedenSpieltagePage() {
 
   return (
     <ProtectedRoute>
-      <div className="space-y-3">
-        <div className="flex justify-between items-center">
-          <h2 className="text-lg font-bold text-gray-800">Meden-Spieltage</h2>
-          <div className="flex gap-1">
+      <div className="space-y-6">
+        {/* Header + Filter */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Meden-Spieltage</h1>
+            <p className="text-gray-500 mt-1">Klicke auf deinen Status für jeden Spieltag</p>
+          </div>
+          <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
             {[null, 1, 2, 3, 4].map(m => (
               <button key={m ?? 'alle'} type="button"
                 onClick={() => setFilterMannschaft(m)}
-                className={`px-3 py-1 rounded text-xs font-medium ${filterMannschaft === m ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  filterMannschaft === m
+                    ? 'bg-white text-blue-700 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}>
                 {m === null ? 'Alle' : `M${m}`}
               </button>
             ))}
           </div>
         </div>
-        <p className="text-sm text-gray-600">Klicke auf deinen Status für jeden Spieltag.</p>
 
+        {/* Meine Mannschaft */}
         {kernFiltered.length > 0 && (
-          <>
-            <h3 className="text-sm font-bold text-blue-700 mt-2">Meine Mannschaft ({mannschaftLabel(meineKern!)})</h3>
-            {kernFiltered.map(renderSpieltag)}
-          </>
+          <section>
+            <p className="section-title mb-3">🎾 Meine Mannschaft ({mannschaftLabel(meineKern!)})</p>
+            <div className="space-y-4">
+              {kernFiltered.map(renderSpieltag)}
+            </div>
+          </section>
         )}
 
+        {/* Trennlinie */}
         {kernFiltered.length > 0 && andereFiltered.length > 0 && (
-          <hr className="border-t-4 border-gray-800 my-4" />
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
+            <div className="relative flex justify-center">
+              <span className="bg-[#f8fafc] px-4 text-xs text-gray-400 uppercase tracking-wider">Weitere Mannschaften</span>
+            </div>
+          </div>
         )}
 
+        {/* Andere Mannschaften */}
         {andereFiltered.length > 0 && (
-          <>
-            {meineKern && <h3 className="text-sm font-bold text-gray-500">Weitere Mannschaften</h3>}
-            {andereFiltered.map(renderSpieltag)}
-          </>
+          <section>
+            {!meineKern && <p className="section-title mb-3">Alle Spieltage</p>}
+            <div className="space-y-4">
+              {andereFiltered.map(renderSpieltag)}
+            </div>
+          </section>
         )}
       </div>
     </ProtectedRoute>

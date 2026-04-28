@@ -193,6 +193,9 @@ export async function updateSpieler(event: APIGatewayProxyEvent): Promise<APIGat
 
     return successResponse(updated);
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return errorResponse('Ungültige Eingabe: ' + error.issues.map(e => e.message).join(', '), 400);
+    }
     console.error('Update spieler error:', error);
     return errorResponse('Internal server error', 500);
   }

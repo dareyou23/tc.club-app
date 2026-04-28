@@ -3,5 +3,50 @@
 @tailwind utilities;
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Smooth transitions for interactive elements */
+button, a {
+  transition: all 0.15s ease;
+}
+
+/* Modern card style */
+@layer components {
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200;
+  }
+  .card-accent {
+    @apply bg-white rounded-xl shadow-sm border-l-4 hover:shadow-md transition-shadow duration-200;
+  }
+  .btn-primary {
+    @apply px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 active:scale-[0.98] transition-all;
+  }
+  .btn-ghost {
+    @apply px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 active:scale-[0.98] transition-all;
+  }
+  .section-title {
+    @apply text-xs font-semibold uppercase tracking-wider text-gray-400;
+  }
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+}
+
+/* Subtle gradient background */
+.bg-page {
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #f8fafc 100%);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
 }

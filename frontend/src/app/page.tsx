@@ -40,7 +40,6 @@ export default function KalenderPage() {
   }, [currentUser?.id]);
 
   async function loadData() {
-    // Meden-Spieltage laden
     const [stRes, vRes] = await Promise.all([
       apiClient.listMedenSpieltage(),
       apiClient.getAllMedenVerfuegbarkeit(),
@@ -54,7 +53,6 @@ export default function KalenderPage() {
     const today = new Date().toISOString().split('T')[0];
     const allSlots: UpcomingSlot[] = [];
     const meinePlaetze: any[] = [];
-
     const isAdmin = currentUser?.rolle === 'admin' || currentUser?.rolle === 'trainings_verwalter';
 
     for (const p of res.data) {
@@ -68,10 +66,7 @@ export default function KalenderPage() {
       const slotsRes = await apiClient.getPlatzSlots(p.id);
       if (!slotsRes.success || !slotsRes.data) continue;
 
-      const futureSlots = slotsRes.data
-        .filter((s: any) => s.datum >= today)
-        .slice(0, 2);
-
+      const futureSlots = slotsRes.data.filter((s: any) => s.datum >= today).slice(0, 2);
       for (const slot of futureSlots) {
         const verfRes = await apiClient.getSlotVerfuegbarkeit(slot.id);
         const verfList = verfRes.success && verfRes.data ? verfRes.data : [];
@@ -80,16 +75,11 @@ export default function KalenderPage() {
         const meine = verfList.find((v: any) => v.spielerId === currentUser?.id);
 
         allSlots.push({
-          slotId: slot.id,
-          datum: slot.datum,
-          uhrzeit: slot.uhrzeit,
-          platzName: p.name,
-          platzOrt: p.ort,
+          slotId: slot.id, datum: slot.datum, uhrzeit: slot.uhrzeit,
+          platzName: p.name, platzOrt: p.ort,
           platzTyp: hatTrainer ? 'saisonplanung' : (p.platzTyp || 'training'),
-          platzId: p.id,
-          anzahlPlaetze: p.anzahlPlaetze || 1,
-          verfuegbarCount: verfuegbare.length,
-          abgelehntCount: abgelehnte.length,
+          platzId: p.id, anzahlPlaetze: p.anzahlPlaetze || 1,
+          verfuegbarCount: verfuegbare.length, abgelehntCount: abgelehnte.length,
           abgelehntSpieler: abgelehnte.map((a: any) => a.spielerName),
           verfuegbareSpieler: verfuegbare.map((v: any) => v.spielerName),
           meineVerfuegbarkeit: meine?.status || 'unbekannt',
@@ -100,7 +90,6 @@ export default function KalenderPage() {
     allSlots.sort((a, b) => a.datum.localeCompare(b.datum) || a.uhrzeit.localeCompare(b.uhrzeit));
     setPlaetze(meinePlaetze);
     setUpcoming(allSlots.slice(0, 2));
-    // Slots nach Platz gruppieren für "Meine Hallenplätze"
     const byPlatz: Record<string, UpcomingSlot[]> = {};
     for (const s of allSlots) {
       (byPlatz[s.platzId] = byPlatz[s.platzId] || []).push(s);
@@ -116,16 +105,20 @@ export default function KalenderPage() {
     if (res.success) loadData();
   }
 
-  function getSlotColor(slot: UpcomingSlot): string {
-    if (slot.platzTyp === 'saisonplanung') return 'border-purple-400 bg-purple-50';
-    if (slot.verfuegbarCount < 4) return 'border-red-400 bg-red-50';
-    if (slot.verfuegbarCount % 2 !== 0) return 'border-orange-400 bg-orange-50';
-    return 'border-green-400 bg-green-50';
+  function statusColor(count: number) {
+    if (count < 4) return { bg: 'bg-red-50', border: 'border-red-300', badge: 'bg-red-100 text-red-700' };
+    if (count % 2 !== 0) return { bg: 'bg-amber-50', border: 'border-amber-300', badge: 'bg-amber-100 text-amber-700' };
+    return { bg: 'bg-emerald-50', border: 'border-emerald-300', badge: 'bg-emerald-100 text-emerald-700' };
   }
 
   function formatDatum(datum: string): string {
     const d = new Date(datum + 'T12:00:00');
     return d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  function formatDatumShort(datum: string): string {
+    const d = new Date(datum + 'T12:00:00');
+    return d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' });
   }
 
   const byDate = upcoming.reduce<Record<string, UpcomingSlot[]>>((acc, s) => {
@@ -135,9 +128,12 @@ export default function KalenderPage() {
 
   return (
     <ProtectedRoute>
-      <div>
-        <h1 className="text-2xl font-bold mb-1">Hallo {currentUser?.vorname} 👋</h1>
-        <p className="text-gray-500 text-sm mb-6">Deine nächsten Termine</p>
+      <div className="space-y-8">
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Hallo {currentUser?.vorname} 👋</h1>
+          <p className="text-gray-500 mt-1">Deine nächsten Termine</p>
+        </div>
 
         {/* Meden-Spieltage */}
         {(() => {
@@ -153,218 +149,211 @@ export default function KalenderPage() {
           const alleMeden = [...kernSt, ...andereSt];
           if (alleMeden.length === 0) return null;
           return (
-            <div className="mb-6">
-              <h2 className="text-sm font-semibold text-gray-600 mb-2">🎾 Meden-Spieltage</h2>
+            <section>
+              <p className="section-title mb-3">🎾 Meden-Spieltage</p>
               <div className="space-y-2">
                 {alleMeden.map((st: any) => {
                   const myStatus = myId ? (medenVerf[st.id]?.[myId] || '') : '';
                   return (
                     <Link key={st.id} href="/meden/spieltage"
-                      className={`block bg-white rounded-lg shadow p-3 border-l-4 ${
-                        st.mannschaft === kern ? 'border-blue-500' : 'border-gray-300'
-                      }`}>
+                      className={`card-accent block p-4 ${st.mannschaft === kern ? 'border-blue-500' : 'border-gray-200'}`}>
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="font-semibold text-sm">{st.mannschaft}. Mannschaft · {formatDatum(st.datum)} {st.uhrzeit}</p>
-                          <p className="text-xs text-gray-600">{st.heimspiel ? '🏠 Heim' : '🚗 Auswärts'} vs {st.gegner}</p>
+                          <p className="font-semibold text-gray-900">M{st.mannschaft} · {formatDatumShort(st.datum)} · {st.uhrzeit}</p>
+                          <p className="text-sm text-gray-500 mt-0.5">{st.heimspiel ? '🏠 Heim' : '🚗 Auswärts'} vs {st.gegner}</p>
                         </div>
-                        <span className="text-xs">{myStatus === 'ja' ? '✅' : myStatus === 'vielleicht' ? '❓' : myStatus === 'nein' ? '❌' : '—'}</span>
+                        <span className={`badge ${myStatus === 'ja' ? 'bg-emerald-100 text-emerald-700' : myStatus === 'vielleicht' ? 'bg-amber-100 text-amber-700' : myStatus === 'nein' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {myStatus === 'ja' ? '✅ Dabei' : myStatus === 'vielleicht' ? '❓ Unsicher' : myStatus === 'nein' ? '❌ Nein' : '—'}
+                        </span>
                       </div>
                     </Link>
                   );
                 })}
               </div>
-            </div>
+            </section>
           );
         })()}
 
+        {/* Nächste Termine */}
         {loading ? (
-          <p className="text-gray-500">Laden...</p>
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+          </div>
         ) : upcoming.length === 0 ? (
-          <p className="text-gray-500">Keine kommenden Termine.</p>
+          <div className="text-center py-12">
+            <p className="text-gray-400 text-lg">Keine kommenden Termine</p>
+          </div>
         ) : (
-          <div className="space-y-4">
+          <section className="space-y-6">
             {Object.entries(byDate).map(([datum, slots]) => (
               <div key={datum}>
-                <h2 className="text-sm font-semibold text-gray-600 mb-2">{formatDatum(datum)}</h2>
-                <div className="space-y-2">
-                  {slots.map(slot => (
-                    <div key={slot.slotId}
-                      className={`bg-white rounded-lg shadow p-4 border-l-4 ${getSlotColor(slot)}`}>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-semibold">{slot.platzName}</h3>
-                          <p className="text-sm text-gray-600">{slot.uhrzeit} Uhr · {slot.platzOrt}</p>
-                        </div>
-                        <div className="text-right">
+                <p className="section-title mb-3">{formatDatum(datum)}</p>
+                <div className="space-y-3">
+                  {slots.map(slot => {
+                    const colors = statusColor(slot.verfuegbarCount);
+                    return (
+                      <div key={slot.slotId} className={`card-accent p-5 ${colors.border}`}>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-semibold text-gray-900">{slot.platzName}</h3>
+                            <p className="text-sm text-gray-500 mt-0.5">{slot.uhrzeit} Uhr · {slot.platzOrt}</p>
+                          </div>
                           {slot.platzTyp === 'saisonplanung' ? (
                             <Link href={`/verfuegbarkeit/saisonplanung?platzId=${slot.platzId}`}
-                              className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200">
+                              className="badge bg-purple-100 text-purple-700 hover:bg-purple-200">
                               📋 Planung →
                             </Link>
                           ) : (
-                            <div className="flex flex-col items-end gap-1">
-                              <span className={`text-xs px-2 py-1 rounded ${
-                                slot.verfuegbarCount < 4 ? 'bg-red-100 text-red-700' :
-                                slot.verfuegbarCount % 2 !== 0 ? 'bg-orange-100 text-orange-700' :
-                                'bg-green-100 text-green-700'
-                              }`}>
-                                {slot.verfuegbarCount} Spieler (min 4)
+                            <div className="flex flex-col items-end gap-1.5">
+                              <span className={`badge ${colors.badge}`}>
+                                {slot.verfuegbarCount} Spieler
                                 {slot.verfuegbarCount < 4 ? ' ⚠️' : slot.verfuegbarCount % 2 !== 0 ? ' ⚡' : ' ✅'}
                               </span>
                               {slot.abgelehntCount > 0 && (
                                 <button type="button"
                                   onClick={() => setExpandedAbgelehnt(expandedAbgelehnt === slot.slotId ? null : slot.slotId)}
-                                  className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200">
+                                  className="badge bg-gray-100 text-gray-500 hover:bg-gray-200 cursor-pointer">
                                   {slot.abgelehntCount} abgelehnt
                                 </button>
                               )}
                             </div>
                           )}
                         </div>
-                      </div>
 
-                      {/* Mitspieler anzeigen */}
-                      {slot.verfuegbareSpieler.length > 0 && (
-                        <p className="text-xs text-gray-500 mt-2">
-                          🎾 {slot.verfuegbareSpieler.join(', ')}
-                        </p>
-                      )}
-
-                      {/* Abgelehnte aufklappbar */}
-                      {expandedAbgelehnt === slot.slotId && slot.abgelehntSpieler.length > 0 && (
-                        <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
-                          <p className="font-medium mb-1">Können nicht:</p>
-                          {slot.abgelehntSpieler.join(', ')}
-                        </div>
-                      )}
-
-                      {/* Buttons */}
-                      {slot.platzTyp !== 'saisonplanung' && (
-                        <div className="mt-3 pt-3 border-t border-gray-100">
-                          <p className="text-xs text-gray-500 mb-2">
-                            {slot.meineVerfuegbarkeit === 'verfuegbar' ? '✅ Du kannst' :
-                             slot.meineVerfuegbarkeit === 'nicht_verfuegbar' ? '❌ Kannst nicht' :
-                             '❓ Noch offen'}
+                        {slot.verfuegbareSpieler.length > 0 && (
+                          <p className="text-xs text-gray-400 mt-3">
+                            🎾 {slot.verfuegbareSpieler.join(', ')}
                           </p>
-                          <div className="flex gap-2">
-                            <button type="button" disabled={saving === slot.slotId}
-                              onClick={() => handleVerfuegbarkeit(slot.slotId, 'verfuegbar')}
-                              className={`flex-1 py-2 rounded text-sm font-medium transition-colors ${
-                                slot.meineVerfuegbarkeit === 'verfuegbar'
-                                  ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-300 hover:bg-green-100'
-                              } disabled:opacity-50`}>
-                              {saving === slot.slotId ? '...' : '✅ Kann'}
-                            </button>
-                            <button type="button" disabled={saving === slot.slotId}
-                              onClick={() => handleVerfuegbarkeit(slot.slotId, 'nicht_verfuegbar')}
-                              className={`flex-1 py-2 rounded text-sm font-medium transition-colors ${
-                                slot.meineVerfuegbarkeit === 'nicht_verfuegbar'
-                                  ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 border border-red-300 hover:bg-red-100'
-                              } disabled:opacity-50`}>
-                              {saving === slot.slotId ? '...' : '❌ Kann nicht'}
-                            </button>
+                        )}
+
+                        {expandedAbgelehnt === slot.slotId && slot.abgelehntSpieler.length > 0 && (
+                          <div className="mt-3 p-3 bg-gray-50 rounded-lg text-xs text-gray-500">
+                            <p className="font-medium mb-1">Können nicht:</p>
+                            {slot.abgelehntSpieler.join(', ')}
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        )}
+
+                        {slot.platzTyp !== 'saisonplanung' && (
+                          <div className="mt-4 pt-4 border-t border-gray-100">
+                            <p className="text-xs text-gray-400 mb-3">
+                              {slot.meineVerfuegbarkeit === 'verfuegbar' ? '✅ Du kannst' :
+                               slot.meineVerfuegbarkeit === 'nicht_verfuegbar' ? '❌ Kannst nicht' :
+                               '❓ Noch offen'}
+                            </p>
+                            <div className="flex gap-2">
+                              <button type="button" disabled={saving === slot.slotId}
+                                onClick={() => handleVerfuegbarkeit(slot.slotId, 'verfuegbar')}
+                                className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all active:scale-[0.98] ${
+                                  slot.meineVerfuegbarkeit === 'verfuegbar'
+                                    ? 'bg-emerald-600 text-white shadow-sm' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                                } disabled:opacity-50`}>
+                                {saving === slot.slotId ? '...' : '✅ Kann'}
+                              </button>
+                              <button type="button" disabled={saving === slot.slotId}
+                                onClick={() => handleVerfuegbarkeit(slot.slotId, 'nicht_verfuegbar')}
+                                className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all active:scale-[0.98] ${
+                                  slot.meineVerfuegbarkeit === 'nicht_verfuegbar'
+                                    ? 'bg-red-600 text-white shadow-sm' : 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
+                                } disabled:opacity-50`}>
+                                {saving === slot.slotId ? '...' : '❌ Kann nicht'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}
-          </div>
+          </section>
         )}
 
-        {/* Platz-Übersicht */}
-        <h2 className="text-lg font-semibold mt-8 mb-3">Meine Hallenplätze</h2>
-        {plaetze.length === 0 ? (
-          <p className="text-gray-500">Keine Hallenplätze in der aktuellen Saison.</p>
-        ) : (
-          <div className="space-y-3">
-            {plaetze.map(p => (
-              <div key={p.id} className={`bg-white rounded-lg shadow p-4 border-l-4 ${
-                (p.platzTyp === 'saisonplanung' || p.trainerName) ? 'border-purple-500' : 'border-blue-500'
-              }`}>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold">{p.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      {WOCHENTAGE[p.wochentag]} {p.uhrzeit}{p.uhrzeitBis ? `–${p.uhrzeitBis}` : ''} · {p.ort}
-                    </p>
+        {/* Meine Hallenplätze */}
+        <section>
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Meine Hallenplätze</h2>
+          {plaetze.length === 0 ? (
+            <p className="text-gray-400">Keine Hallenplätze in der aktuellen Saison.</p>
+          ) : (
+            <div className="space-y-4">
+              {plaetze.map(p => (
+                <div key={p.id} className={`card-accent p-5 ${
+                  (p.platzTyp === 'saisonplanung' || p.trainerName) ? 'border-purple-400' : 'border-blue-400'
+                }`}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{p.name}</h3>
+                      <p className="text-sm text-gray-500 mt-0.5">
+                        {WOCHENTAGE[p.wochentag]} {p.uhrzeit}{p.uhrzeitBis ? `–${p.uhrzeitBis}` : ''} · {p.ort}
+                      </p>
+                    </div>
+                    {(p.platzTyp === 'saisonplanung' || p.trainerName) && (
+                      <Link href={`/verfuegbarkeit/saisonplanung?platzId=${p.id}`}
+                        className="badge bg-purple-100 text-purple-700 hover:bg-purple-200">
+                        📋 Planung →
+                      </Link>
+                    )}
                   </div>
-                  {(p.platzTyp === 'saisonplanung' || p.trainerName) && (
-                    <Link href={`/verfuegbarkeit/saisonplanung?platzId=${p.id}`}
-                      className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200">
-                      📋 Planung →
-                    </Link>
+
+                  {p.trainerName && (
+                    <div className="mt-3">
+                      <span className="badge bg-emerald-100 text-emerald-700">🎓 {p.trainerName}</span>
+                    </div>
+                  )}
+
+                  {p.platzTyp !== 'saisonplanung' && !p.trainerName && (
+                    <>
+                      <div className="mt-3 flex gap-2">
+                        <span className="badge bg-blue-50 text-blue-600">👥 {p.gruppengroesse} Spieler</span>
+                        {p.anzahlPlaetze > 1 && (
+                          <span className="badge bg-indigo-50 text-indigo-600">{p.anzahlPlaetze} Plätze</span>
+                        )}
+                      </div>
+
+                      {(allSlotsByPlatz[p.id] || []).map(slot => {
+                        const colors = statusColor(slot.verfuegbarCount);
+                        return (
+                          <div key={slot.slotId} className="mt-4 pt-4 border-t border-gray-100">
+                            <div className="flex justify-between items-center mb-3">
+                              <span className="text-sm font-medium text-gray-700">{formatDatumShort(slot.datum)} · {slot.uhrzeit}</span>
+                              <span className={`badge ${colors.badge}`}>{slot.verfuegbarCount} Spieler</span>
+                            </div>
+                            {slot.verfuegbareSpieler.length > 0 && (
+                              <p className="text-xs text-gray-400 mb-3">🎾 {slot.verfuegbareSpieler.join(', ')}</p>
+                            )}
+                            <p className="text-xs text-gray-400 mb-3">
+                              {slot.meineVerfuegbarkeit === 'verfuegbar' ? '✅ Du kannst' :
+                               slot.meineVerfuegbarkeit === 'nicht_verfuegbar' ? '❌ Kannst nicht' :
+                               '❓ Noch offen'}
+                            </p>
+                            <div className="flex gap-2">
+                              <button type="button" disabled={saving === slot.slotId}
+                                onClick={() => handleVerfuegbarkeit(slot.slotId, 'verfuegbar')}
+                                className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all active:scale-[0.98] ${
+                                  slot.meineVerfuegbarkeit === 'verfuegbar'
+                                    ? 'bg-emerald-600 text-white shadow-sm' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                                } disabled:opacity-50`}>
+                                {saving === slot.slotId ? '...' : '✅ Kann'}
+                              </button>
+                              <button type="button" disabled={saving === slot.slotId}
+                                onClick={() => handleVerfuegbarkeit(slot.slotId, 'nicht_verfuegbar')}
+                                className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all active:scale-[0.98] ${
+                                  slot.meineVerfuegbarkeit === 'nicht_verfuegbar'
+                                    ? 'bg-red-600 text-white shadow-sm' : 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
+                                } disabled:opacity-50`}>
+                                {saving === slot.slotId ? '...' : '❌ Kann nicht'}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </>
                   )}
                 </div>
-                {p.platzTyp !== 'saisonplanung' && !p.trainerName && (
-                  <>
-                    <div className="mt-2 flex gap-2 text-xs">
-                      <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                        Gruppe: {p.gruppengroesse}
-                      </span>
-                      {p.anzahlPlaetze > 1 && (
-                        <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded">
-                          {p.anzahlPlaetze} Plätze
-                        </span>
-                      )}
-                    </div>
-                    {/* Nächste Slots mit Kann/Kann-nicht */}
-                    {(allSlotsByPlatz[p.id] || []).map(slot => (
-                      <div key={slot.slotId} className="mt-3 pt-3 border-t border-gray-100">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium">{formatDatum(slot.datum)} · {slot.uhrzeit} Uhr</span>
-                          <span className={`text-xs px-2 py-1 rounded ${
-                            slot.verfuegbarCount < 4 ? 'bg-red-100 text-red-700' :
-                            slot.verfuegbarCount % 2 !== 0 ? 'bg-orange-100 text-orange-700' :
-                            'bg-green-100 text-green-700'
-                          }`}>
-                            {slot.verfuegbarCount} Spieler (min 4)
-                          </span>
-                        </div>
-                        {slot.verfuegbareSpieler.length > 0 && (
-                          <p className="text-xs text-gray-500 mb-2">🎾 {slot.verfuegbareSpieler.join(', ')}</p>
-                        )}
-                        <p className="text-xs text-gray-500 mb-2">
-                          {slot.meineVerfuegbarkeit === 'verfuegbar' ? '✅ Du kannst' :
-                           slot.meineVerfuegbarkeit === 'nicht_verfuegbar' ? '❌ Kannst nicht' :
-                           '❓ Noch offen'}
-                        </p>
-                        <div className="flex gap-2">
-                          <button type="button" disabled={saving === slot.slotId}
-                            onClick={() => handleVerfuegbarkeit(slot.slotId, 'verfuegbar')}
-                            className={`flex-1 py-2 rounded text-sm font-medium transition-colors ${
-                              slot.meineVerfuegbarkeit === 'verfuegbar'
-                                ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-300 hover:bg-green-100'
-                            } disabled:opacity-50`}>
-                            {saving === slot.slotId ? '...' : '✅ Kann'}
-                          </button>
-                          <button type="button" disabled={saving === slot.slotId}
-                            onClick={() => handleVerfuegbarkeit(slot.slotId, 'nicht_verfuegbar')}
-                            className={`flex-1 py-2 rounded text-sm font-medium transition-colors ${
-                              slot.meineVerfuegbarkeit === 'nicht_verfuegbar'
-                                ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 border border-red-300 hover:bg-red-100'
-                            } disabled:opacity-50`}>
-                            {saving === slot.slotId ? '...' : '❌ Kann nicht'}
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </>
-                )}
-                {p.trainerName && (
-                  <div className="mt-2 flex gap-2 text-xs">
-                    <span className="bg-green-100 text-green-700 px-2 py-1 rounded">
-                      Trainer: {p.trainerName}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </ProtectedRoute>
   );

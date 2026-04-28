@@ -351,18 +351,19 @@ export default function AdminSpielerPage() {
                   type="text"
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
-                  placeholder="Neues Passwort (min. 6 Zeichen)"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-                  minLength={6}
+                  placeholder="Neues Passwort (min. 8 Zeichen)"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                  minLength={8}
                   autoFocus
                 />
+                <p className="text-xs text-gray-400 mb-4">Groß- und Kleinbuchstaben + Zahl erforderlich</p>
                 <div className="flex gap-2">
                   <button type="button" onClick={() => { setPwModal(null); setNewPassword(''); }}
                     className="flex-1 py-2 px-4 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm">
                     Abbrechen
                   </button>
                   <button type="button" onClick={handleSetPassword}
-                    disabled={pwSaving || newPassword.length < 6}
+                    disabled={pwSaving || newPassword.length < 8}
                     className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 text-sm">
                     {pwSaving ? 'Speichern...' : 'Setzen'}
                   </button>
