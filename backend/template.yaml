@@ -934,6 +934,27 @@ Resources:
         - DynamoDBReadPolicy:
             TableName: !Ref ClubAppTable
 
+  # --- Sync: MedenSaison → ClubApp (temporär) ---
+
+  MedenSyncFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/meden-sync.handler
+      Timeout: 60
+      Events:
+        SyncSchedule:
+          Type: Schedule
+          Properties:
+            Schedule: rate(15 minutes)
+            Description: Sync M4-Verfügbarkeiten aus MedenSaison in ClubApp
+            Enabled: true
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClubAppTable
+        - DynamoDBReadPolicy:
+            TableName: MedenSaison
+
 Outputs:
   ClubAppApiUrl:
     Description: API Gateway endpoint URL
