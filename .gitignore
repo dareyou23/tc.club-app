@@ -10,3 +10,6 @@ dist/
 backend/data/meldeliste*.json
 !backend/data/meldeliste.example.json
 backend/clubapp-backup*.json
+*.vcf
+backend/reset-temp.*
+backend/reset-spieler-temp.*
