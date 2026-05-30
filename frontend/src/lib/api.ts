@@ -276,6 +276,19 @@ class ApiClient {
     });
   }
   async getFestspielStatus() { return this.request<any[]>('/meden/festspiel-status'); }
+
+  // --- Meden Abrechnung ---
+  async createAbrechnung(spieltagId: string, data: { kategorie: string; betrag: number; beschreibung?: string }) {
+    return this.request<any>(`/meden/abrechnung/spieltag/${spieltagId}`, {
+      method: 'POST', body: JSON.stringify(data),
+    });
+  }
+  async getAbrechnung(spieltagId: string) { return this.request<any[]>(`/meden/abrechnung/spieltag/${spieltagId}`); }
+  async deleteAbrechnung(spieltagId: string, kostenId: string) {
+    return this.request<any>(`/meden/abrechnung/spieltag/${spieltagId}/${kostenId}`, { method: 'DELETE' });
+  }
+  async getSaldo(mannschaft: number) { return this.request<any[]>(`/meden/abrechnung/saldo/${mannschaft}`); }
+  async getMeinSaldo() { return this.request<any>('/meden/abrechnung/mein-saldo'); }
 }
 
 export const apiClient = new ApiClient();

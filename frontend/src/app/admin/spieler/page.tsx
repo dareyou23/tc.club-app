@@ -111,13 +111,13 @@ export default function AdminSpielerPage() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Spieler-Verwaltung</h1>
         <button type="button" onClick={() => setShowForm(!showForm)}
-          className={`bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm ${canCreate ? '' : 'hidden'}`}>
+          className={`btn-primary px-4 py-2 rounded hover:bg-accent-blue text-sm ${canCreate ? '' : 'hidden'}`}>
           {showForm ? 'Abbrechen' : '+ Neuer Spieler'}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="bg-white rounded-lg shadow p-4 mb-4 grid grid-cols-2 gap-3">
+        <form onSubmit={handleCreate} className="card rounded-lg shadow p-4 mb-4 grid grid-cols-2 gap-3">
           <input placeholder="Vorname" value={form.vorname} required
             onChange={e => setForm({ ...form, vorname: e.target.value })}
             className="px-3 py-2 border rounded" />
@@ -146,21 +146,21 @@ export default function AdminSpielerPage() {
       {/* Temporäres Passwort Modal nach Reset */}
       {resetResult && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full text-center">
-            <p className="text-sm text-gray-600 mb-1">Passwort zurückgesetzt für</p>
+          <div className="card rounded-lg shadow-xl p-6 max-w-sm w-full text-center">
+            <p className="text-sm theme-text-muted mb-1">Passwort zurückgesetzt für</p>
             <p className="font-medium mb-3">{resetResult.email}</p>
             <p className="text-3xl font-mono font-bold text-blue-900 bg-blue-50 rounded p-3 mb-3 select-all">{resetResult.password}</p>
-            <p className="text-xs text-gray-500 mb-4">Bitte teilen Sie das temporäre Passwort dem Spieler persönlich mit.</p>
+            <p className="text-xs theme-text-muted mb-4">Bitte teilen Sie das temporäre Passwort dem Spieler persönlich mit.</p>
             <button type="button" onClick={() => setResetResult(null)}
-              className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+              className="w-full py-2 px-4 btn-primary rounded-md hover:bg-accent-blue text-sm">
               Verstanden
             </button>
           </div>
         </div>
       )}
 
-      {loading ? <p className="text-gray-500">Laden...</p> : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+      {loading ? <p className="theme-text-muted">Laden...</p> : (
+        <div className="card rounded-lg shadow overflow-hidden">
           <div className="p-3 border-b">
             <input
               type="text"
@@ -172,7 +172,7 @@ export default function AdminSpielerPage() {
           </div>
           <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="theme-btn-inactive">
               <tr>
                 {[
                   { key: 'setzlistePosition', label: 'Ra.', width: 'min-w-[60px]' },
@@ -187,7 +187,7 @@ export default function AdminSpielerPage() {
                 ].map(col => (
                   <th key={col.key}
                     onClick={() => { if (sortBy === col.key) setSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setSortBy(col.key); setSortDir('asc'); } }}
-                    className={`text-left p-3 ${col.width} cursor-pointer hover:bg-gray-100 select-none`}>
+                    className={`text-left p-3 ${col.width} cursor-pointer hover:theme-btn-inactive select-none`}>
                     {col.label} {sortBy === col.key ? (sortDir === 'asc' ? '▲' : '▼') : ''}
                   </th>
                 ))}
@@ -219,7 +219,7 @@ export default function AdminSpielerPage() {
                   if (ra <= 6) return { nr: 1, label: '1. Mannschaft', color: 'bg-blue-50' };
                   if (ra <= 12) return { nr: 2, label: '2. Mannschaft', color: 'bg-green-50' };
                   if (ra <= 18) return { nr: 3, label: '3. Mannschaft', color: 'bg-yellow-50' };
-                  return { nr: 4, label: '4. Mannschaft', color: 'bg-gray-50' };
+                  return { nr: 4, label: '4. Mannschaft', color: 'theme-btn-inactive' };
                 };
 
                 const isSortByRang = sortBy === 'setzlistePosition' && sortDir === 'asc';
@@ -237,7 +237,7 @@ export default function AdminSpielerPage() {
                     }
                     rows.push(
                       <tr key={`label-${mNr}`} className={m!.color}>
-                        <td colSpan={99} className="px-3 py-1.5 text-xs font-bold text-gray-700 uppercase tracking-wide">
+                        <td colSpan={99} className="px-3 py-1.5 text-xs font-bold theme-text-muted uppercase tracking-wide">
                           {m!.label}
                         </td>
                       </tr>
@@ -248,12 +248,12 @@ export default function AdminSpielerPage() {
                   const rowBg = isSortByRang && m ? m.color : '';
                   rows.push(
                 <tr key={s.id} className={`border-t ${rowBg}`}>
-                  <td className="p-3 text-sm text-gray-600">{s.setzlistePosition || '-'}</td>
-                  <td className="p-3 text-sm font-mono text-gray-600">{s.id}</td>
+                  <td className="p-3 text-sm theme-text-muted">{s.setzlistePosition || '-'}</td>
+                  <td className="p-3 text-sm font-mono theme-text-muted">{s.id}</td>
                   <td className="p-3 text-sm font-medium">
                     {s.vorname} {s.name}
                     {festspielMap[s.id]?.festgespielt && (
-                      <span className="ml-1 text-red-600" title={`Festgespielt in M${festspielMap[s.id].festgespieltIn.join(',')}`}>🔒</span>
+                      <span className="ml-1 text-accent-red" title={`Festgespielt in M${festspielMap[s.id].festgespieltIn.join(',')}`}>🔒</span>
                     )}
                   </td>
                   <td className="p-3 text-center">
@@ -267,7 +267,7 @@ export default function AdminSpielerPage() {
                       className={`w-4 h-4 ${canEdit ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'} accent-blue-600`}
                       title={s.mannschaftsfuehrer ? 'Mannschaftsführer entfernen' : 'Als Mannschaftsführer setzen'} />
                   </td>
-                  <td className="p-3 text-sm text-gray-600 font-mono text-right tabular-nums">{s.lk ? Number(s.lk).toFixed(1) : '-'}</td>
+                  <td className="p-3 text-sm theme-text-muted font-mono text-right tabular-nums">{s.lk ? Number(s.lk).toFixed(1) : '-'}</td>
                   <td className="p-3 text-sm text-center">
                     <button type="button" onClick={async () => {
                       if (!canEdit && !isMF) return;
@@ -278,21 +278,21 @@ export default function AdminSpielerPage() {
                       s.kern === 1 ? 'bg-blue-200 text-blue-800' :
                       s.kern === 2 ? 'bg-green-200 text-green-800' :
                       s.kern === 3 ? 'bg-yellow-200 text-yellow-800' :
-                      s.kern === 4 ? 'bg-gray-200 text-gray-800' :
-                      'bg-gray-100 text-gray-400'
+                      s.kern === 4 ? 'bg-gray-200 theme-text' :
+                      'theme-btn-inactive theme-text-subtle'
                     }`}>{s.kern ? `M${s.kern}` : '—'}</button>
                   </td>
-                  <td className="p-3 text-sm text-gray-600">{s.email}</td>
+                  <td className="p-3 text-sm theme-text-muted">{s.email}</td>
                   <td className="p-3">
                     <span className={`px-2 py-1 rounded text-xs ${
-                      s.rolle === 'admin' ? 'bg-red-100 text-red-700' :
+                      s.rolle === 'admin' ? 'bg-red-100 text-accent-red' :
                       s.rolle === 'club_manager' ? 'bg-purple-100 text-purple-700' :
                       s.rolle === 'trainings_verwalter' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-blue-100 text-blue-700'
+                      'bg-blue-100 theme-link'
                     }`}>{s.rolle}</span>
                   </td>
                   {isAdmin && (
-                    <td className="p-3 text-xs text-gray-500">
+                    <td className="p-3 text-xs theme-text-muted">
                       {s.lastLogin ? new Date(s.lastLogin).toLocaleDateString('de-DE') : '—'}
                     </td>
                   )}
@@ -310,7 +310,7 @@ export default function AdminSpielerPage() {
                     )}
                     <button type="button"
                       onClick={() => setPwModal({ id: s.id, name: `${s.vorname} ${s.name}` })}
-                      className="text-blue-600 hover:text-blue-800 text-xs"
+                      className="theme-link hover:text-blue-800 text-xs"
                       title={`Passwort für ${s.vorname} ${s.name} setzen`}>
                       🔑
                     </button>
@@ -319,7 +319,7 @@ export default function AdminSpielerPage() {
                       {resetting === s.id ? 'Reset...' : 'PW Reset'}
                     </button>
                     <button type="button" onClick={() => handleDelete(s)} disabled={deleting === s.id}
-                      className={`text-red-600 hover:text-red-800 text-xs disabled:opacity-50 ${canDelete ? '' : 'hidden'}`}>
+                      className={`text-accent-red hover:text-red-800 text-xs disabled:opacity-50 ${canDelete ? '' : 'hidden'}`}>
                       {deleting === s.id ? 'Löschen...' : 'Löschen'}
                     </button>
                   </td>
@@ -337,7 +337,7 @@ export default function AdminSpielerPage() {
       {/* PW direkt setzen Modal */}
       {pwModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
+          <div className="card rounded-lg shadow-xl p-6 max-w-sm w-full">
             {pwSuccess ? (
               <div className="text-center">
                 <div className="text-4xl mb-2">✅</div>
@@ -346,25 +346,25 @@ export default function AdminSpielerPage() {
             ) : (
               <>
                 <h3 className="font-semibold text-lg mb-1">Passwort setzen</h3>
-                <p className="text-sm text-gray-600 mb-4">{pwModal.name}</p>
+                <p className="text-sm theme-text-muted mb-4">{pwModal.name}</p>
                 <input
                   type="text"
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
                   placeholder="Neues Passwort (min. 8 Zeichen)"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                  className="w-full px-3 py-2 border border-dove-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
                   minLength={8}
                   autoFocus
                 />
-                <p className="text-xs text-gray-400 mb-4">Groß- und Kleinbuchstaben + Zahl erforderlich</p>
+                <p className="text-xs theme-text-subtle mb-4">Groß- und Kleinbuchstaben + Zahl erforderlich</p>
                 <div className="flex gap-2">
                   <button type="button" onClick={() => { setPwModal(null); setNewPassword(''); }}
-                    className="flex-1 py-2 px-4 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm">
+                    className="flex-1 py-2 px-4 border border-dove-300 rounded-md theme-text-muted hover:theme-btn-inactive text-sm">
                     Abbrechen
                   </button>
                   <button type="button" onClick={handleSetPassword}
                     disabled={pwSaving || newPassword.length < 8}
-                    className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 text-sm">
+                    className="flex-1 py-2 px-4 btn-primary rounded-md hover:bg-accent-blue disabled:opacity-50 text-sm">
                     {pwSaving ? 'Speichern...' : 'Setzen'}
                   </button>
                 </div>

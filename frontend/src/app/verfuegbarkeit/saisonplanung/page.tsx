@@ -14,7 +14,7 @@ type CountMap = Record<string, number>;
 
 export default function SaisonplanungPageWrapper() {
   return (
-    <Suspense fallback={<div className="text-center py-12 text-gray-500">Laden...</div>}>
+    <Suspense fallback={<div className="text-center py-12 theme-text-muted">Laden...</div>}>
       <SaisonplanungPage />
     </Suspense>
   );
@@ -272,8 +272,8 @@ function SaisonplanungPage() {
 
   const WOCHENTAGE_LANG = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
 
-  if (loading) return <ProtectedRoute><p className="text-gray-500 p-4">Laden...</p></ProtectedRoute>;
-  if (!allePlaetze.length) return <ProtectedRoute><p className="text-gray-500 p-4">Keine Plätze gefunden.</p></ProtectedRoute>;
+  if (loading) return <ProtectedRoute><p className="theme-text-muted p-4">Laden...</p></ProtectedRoute>;
+  if (!allePlaetze.length) return <ProtectedRoute><p className="theme-text-muted p-4">Keine Plätze gefunden.</p></ProtectedRoute>;
 
   const selectedPlatz = allePlaetze.find(p => p.id === selectedPlatzId);
 
@@ -294,10 +294,10 @@ function SaisonplanungPage() {
             <button key={p.id} onClick={() => setSelectedPlatzId(p.id)}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 p.id === selectedPlatzId
-                  ? 'bg-blue-600 text-white'
+                  ? 'btn-primary'
                   : p.gesperrt
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'theme-btn-inactive theme-text-subtle cursor-not-allowed'
+                  : 'theme-btn-inactive theme-text-muted hover:bg-gray-200'
               }`}
               disabled={p.gesperrt}
               title={p.gesperrt ? `Freigabe ab ${p.freigabeDatum}` : ''}>
@@ -310,14 +310,14 @@ function SaisonplanungPage() {
 
       {/* Gesperrt-Hinweis */}
       {selectedPlatz?.gesperrt ? (
-        <div className="max-w-md mx-auto mt-8 bg-amber-50 border border-amber-300 rounded-lg p-6 text-center">
+        <div className="max-w-md mx-auto mt-8 bg-accent-yellow/10 border border-amber-300 rounded-lg p-6 text-center">
           <p className="text-3xl mb-3">🗓️</p>
           <p className="text-amber-800 font-semibold mb-2">Saisonplanung noch nicht freigegeben</p>
-          <p className="text-amber-700 text-sm">Die Planung wird 6 Wochen vor Saisonstart verfügbar.</p>
-          <p className="text-amber-700 text-sm mt-1">Freigabe ab: {selectedPlatz.freigabeDatum}</p>
+          <p className="text-accent-yellow text-sm">Die Planung wird 6 Wochen vor Saisonstart verfügbar.</p>
+          <p className="text-accent-yellow text-sm mt-1">Freigabe ab: {selectedPlatz.freigabeDatum}</p>
         </div>
       ) : loadingPlatz ? (
-        <p className="text-gray-500 p-4">Lade Platz-Daten...</p>
+        <p className="theme-text-muted p-4">Lade Platz-Daten...</p>
       ) : (
         <>
           {/* Header */}
@@ -329,19 +329,19 @@ function SaisonplanungPage() {
           </h1>
 
           {slots.length === 0 ? (
-            <p className="text-gray-500">Keine zukünftigen Termine für diesen Platz.</p>
+            <p className="theme-text-muted">Keine zukünftigen Termine für diesen Platz.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="text-xs border-collapse">
                 <thead>
                   <tr>
-                    <th className="sticky left-0 bg-white z-10 p-2 text-left border-b min-w-[140px]">Spieler</th>
+                    <th className="sticky left-0 card z-10 p-2 text-left border-b min-w-[140px]">Spieler</th>
                     {slots.map(slot => {
                       const { isFerien, isFeiertag } = isFeiertagOderFerien(slot.datum);
                       const ferienOrFeiertag = isFerien || isFeiertag;
                       return (
                         <th key={slot.id} className={`p-1 border-b text-center min-w-[44px] ${
-                          ferienOrFeiertag ? 'bg-amber-100' : verfuegbarkeit[slot.id]?.has(currentUser?.id || '') ? 'bg-green-50' : 'bg-gray-50'
+                          ferienOrFeiertag ? 'bg-amber-100' : verfuegbarkeit[slot.id]?.has(currentUser?.id || '') ? 'bg-green-50' : 'theme-btn-inactive'
                         }`}>
                           <div>{fmtDay(slot.datum)}</div>
                           <div>{fmtDate(slot.datum)}</div>
@@ -358,8 +358,8 @@ function SaisonplanungPage() {
                     </td>
                   </tr>
                   {spieler.map(sp => (
-                    <tr key={`v-${sp.id}`} className="border-b border-gray-100">
-                      <td className={`sticky left-0 z-10 p-2 font-medium ${sp.id === currentUser?.id ? 'bg-green-50' : 'bg-white'}`}>
+                    <tr key={`v-${sp.id}`} className="border-b border-dove-200/30">
+                      <td className={`sticky left-0 z-10 p-2 font-medium ${sp.id === currentUser?.id ? 'bg-green-50' : 'card'}`}>
                         {sp.name}
                       </td>
                       {slots.map(slot => {
@@ -367,13 +367,13 @@ function SaisonplanungPage() {
                         const isV = verfuegbarkeit[slot.id]?.has(sp.id);
                         const isNV = nichtVerfuegbar[slot.id]?.has(sp.id);
                         return (
-                          <td key={slot.id} className={`p-1 text-center ${isMe ? 'bg-green-50' : 'bg-gray-50'}`}>
+                          <td key={slot.id} className={`p-1 text-center ${isMe ? 'bg-green-50' : 'theme-btn-inactive'}`}>
                             {isMe ? (
                               <button type="button" disabled={saving} onClick={() => toggleVerf(slot.id)}
                                 className={`w-7 h-7 rounded border text-sm ${
                                   isV ? 'bg-green-500 text-white border-green-600'
-                                  : isNV ? 'bg-red-500 text-white border-red-600'
-                                  : 'bg-white border-gray-300 hover:bg-gray-100'
+                                  : isNV ? 'bg-accent-red/100 text-white border-red-600'
+                                  : 'card border-dove-300 hover:theme-btn-inactive'
                                 } disabled:opacity-50`}>
                                 {isV ? '✓' : isNV ? '✗' : ''}
                               </button>
@@ -398,17 +398,17 @@ function SaisonplanungPage() {
                     </td>
                   </tr>
                   {spieler.map(sp => (
-                    <tr key={`z-${sp.id}`} className="border-b border-gray-100">
-                      <td className={`sticky left-0 z-10 p-2 font-medium ${sp.id === currentUser?.id ? 'bg-green-50' : 'bg-white'}`}>
-                        {sp.name} <span className="text-gray-400">({zuwCounts[sp.id] || 0})</span>
+                    <tr key={`z-${sp.id}`} className="border-b border-dove-200/30">
+                      <td className={`sticky left-0 z-10 p-2 font-medium ${sp.id === currentUser?.id ? 'bg-green-50' : 'card'}`}>
+                        {sp.name} <span className="theme-text-subtle">({zuwCounts[sp.id] || 0})</span>
                       </td>
                       {slots.map(slot => {
                         const isMe = sp.id === currentUser?.id;
                         const isZ = zuweisungen[slot.id]?.has(sp.id);
                         return (
-                          <td key={slot.id} className={`p-1 text-center ${isMe ? 'bg-green-50' : 'bg-gray-50'}`}>
+                          <td key={slot.id} className={`p-1 text-center ${isMe ? 'bg-green-50' : 'theme-btn-inactive'}`}>
                             <button type="button" disabled={saving} onClick={() => toggleZuw(slot.id, sp.id)}
-                              className={`w-7 h-7 rounded border text-sm ${isZ ? 'bg-orange-500 text-white border-orange-600' : 'bg-white border-gray-300 hover:bg-gray-100'} disabled:opacity-50`}>
+                              className={`w-7 h-7 rounded border text-sm ${isZ ? 'bg-orange-500 text-white border-orange-600' : 'card border-dove-300 hover:theme-btn-inactive'} disabled:opacity-50`}>
                               {isZ ? '✓' : ''}
                             </button>
                           </td>

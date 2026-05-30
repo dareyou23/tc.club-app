@@ -49,8 +49,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center theme-btn-inactive">
+      <div className="card p-8 rounded-lg shadow-md w-full max-w-md">
         <div className="flex flex-col items-center mb-6">
           <Image
             src="/ClubLogo.jpg"
@@ -60,17 +60,17 @@ export default function LoginPage() {
             className="rounded-full object-cover mb-4 drop-shadow-lg"
             priority
           />
-          <h1 className="text-3xl font-bold text-blue-600">TC-Dormagen Club App</h1>
+          <h1 className="text-3xl font-bold theme-link">TC-Dormagen Club App</h1>
         </div>
 
         {!showPwVergessen ? (
           <>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="bg-red-50 text-red-700 p-3 rounded text-sm">{error}</div>
+                <div className="bg-accent-red/10 text-accent-red p-3 rounded text-sm">{error}</div>
               )}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium theme-text-muted mb-1">
                   E-Mail
                 </label>
                 <input id="email" type="email" value={email}
@@ -79,26 +79,26 @@ export default function LoginPage() {
                   placeholder="name@example.de" />
               </div>
               <div className="relative">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium theme-text-muted mb-1">
                   Passwort
                 </label>
                 <input id="password" type={showPassword ? "text" : "password"} value={password}
                   onChange={e => setPassword(e.target.value)} required
                   className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-9 theme-text-muted hover:theme-text-muted"
                   title={showPassword ? "Passwort verbergen" : "Passwort sehen"}>
                   🎾
                 </button>
               </div>
               <button type="submit" disabled={loading}
-                className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:opacity-50">
+                className="w-full btn-primary py-2 rounded-md hover:bg-accent-blue disabled:opacity-50">
                 {loading ? 'Anmelden...' : 'Anmelden'}
               </button>
             </form>
             <div className="mt-4 text-center">
               <button type="button" onClick={() => setShowPwVergessen(true)}
-                className="text-sm text-blue-600 hover:text-blue-800 hover:underline">
+                className="text-sm theme-link hover:text-blue-800 hover:underline">
                 Passwort vergessen?
               </button>
             </div>
@@ -112,9 +112,9 @@ export default function LoginPage() {
               </div>
             ) : (
               <form onSubmit={handlePwVergessen} className="space-y-4">
-                <p className="text-sm text-gray-600">Gib deine E-Mail-Adresse ein. Ein Admin wird benachrichtigt und setzt dein Passwort zurück.</p>
+                <p className="text-sm theme-text-muted">Gib deine E-Mail-Adresse ein. Ein Admin wird benachrichtigt und setzt dein Passwort zurück.</p>
                 <div>
-                  <label htmlFor="pw-vergessen-email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="pw-vergessen-email" className="block text-sm font-medium theme-text-muted mb-1">
                     E-Mail
                   </label>
                   <input id="pw-vergessen-email" type="email" value={pwVergessenEmail}
@@ -123,14 +123,14 @@ export default function LoginPage() {
                     placeholder="name@example.de" />
                 </div>
                 <button type="submit" disabled={pwVergessenLoading}
-                  className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:opacity-50">
+                  className="w-full btn-primary py-2 rounded-md hover:bg-accent-blue disabled:opacity-50">
                   {pwVergessenLoading ? 'Senden...' : 'Absenden'}
                 </button>
               </form>
             )}
             <div className="text-center">
               <button type="button" onClick={() => { setShowPwVergessen(false); setPwVergessenSent(false); setPwVergessenEmail(''); }}
-                className="text-sm text-gray-500 hover:text-gray-700 hover:underline">
+                className="text-sm theme-text-muted hover:theme-text-muted hover:underline">
                 ← Zurück zum Login
               </button>
             </div>

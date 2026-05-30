@@ -49,7 +49,7 @@ export default function FestspielPage() {
     return <ProtectedRoute allowedRoles={['trainings_verwalter', 'admin']}><div /></ProtectedRoute>;
   }
 
-  if (!loaded) return <div className="text-center py-12 text-gray-500">Laden...</div>;
+  if (!loaded) return <div className="text-center py-12 theme-text-muted">Laden...</div>;
 
   // Alle Spieler mit Rang, auch die ohne Einsätze
   const alleSpieler = spieler
@@ -63,24 +63,24 @@ export default function FestspielPage() {
   return (
     <ProtectedRoute>
       <div>
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Festspiel-Übersicht</h2>
-        <p className="text-sm text-gray-600 mb-4">
+        <h2 className="text-xl font-bold theme-text mb-4">Festspiel-Übersicht</h2>
+        <p className="text-sm theme-text-muted mb-4">
           Ab 3 Einsätzen in einer höheren Mannschaft ist ein Spieler dort festgespielt
           und darf nicht mehr in niedrigeren Mannschaften spielen.
         </p>
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
-            <thead className="bg-gray-50">
+            <thead className="theme-btn-inactive">
               <tr>
-                <th className="border border-gray-300 px-3 py-2 text-left">Ra.</th>
-                <th className="border border-gray-300 px-3 py-2 text-left">Spieler</th>
-                <th className="border border-gray-300 px-3 py-2 text-center">Stamm</th>
-                <th className="border border-gray-300 px-3 py-2 text-center">M1</th>
-                <th className="border border-gray-300 px-3 py-2 text-center">M2</th>
-                <th className="border border-gray-300 px-3 py-2 text-center">M3</th>
-                <th className="border border-gray-300 px-3 py-2 text-center">M4</th>
-                <th className="border border-gray-300 px-3 py-2 text-center">Status</th>
+                <th className="border border-dove-300 px-3 py-2 text-left">Ra.</th>
+                <th className="border border-dove-300 px-3 py-2 text-left">Spieler</th>
+                <th className="border border-dove-300 px-3 py-2 text-center">Stamm</th>
+                <th className="border border-dove-300 px-3 py-2 text-center">M1</th>
+                <th className="border border-dove-300 px-3 py-2 text-center">M2</th>
+                <th className="border border-dove-300 px-3 py-2 text-center">M3</th>
+                <th className="border border-dove-300 px-3 py-2 text-center">M4</th>
+                <th className="border border-dove-300 px-3 py-2 text-center">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -101,17 +101,17 @@ export default function FestspielPage() {
 
                 return (
                   <tr key={s.id} className="border-t">
-                    <td className="border border-gray-300 px-3 py-1.5 text-gray-500">{s.setzlistePosition}</td>
-                    <td className="border border-gray-300 px-3 py-1.5 font-medium">{s.vorname} {s.name}</td>
-                    <td className="border border-gray-300 px-3 py-1.5 text-center text-xs">M{stammM}</td>
+                    <td className="border border-dove-300 px-3 py-1.5 theme-text-muted">{s.setzlistePosition}</td>
+                    <td className="border border-dove-300 px-3 py-1.5 font-medium">{s.vorname} {s.name}</td>
+                    <td className="border border-dove-300 px-3 py-1.5 text-center text-xs">M{stammM}</td>
                     {[1, 2, 3, 4].map(m => (
-                      <td key={m} className={`border border-gray-300 px-3 py-1.5 text-center ${cellClass(m)}`}>
+                      <td key={m} className={`border border-dove-300 px-3 py-1.5 text-center ${cellClass(m)}`}>
                         {m === stammM ? '●' : getCount(m) || ''}
                       </td>
                     ))}
-                    <td className="border border-gray-300 px-3 py-1.5 text-center">
+                    <td className="border border-dove-300 px-3 py-1.5 text-center">
                       {info?.festgespielt ? (
-                        <span className="text-red-700 font-bold text-xs">🔒 M{info.festgespieltIn.join(',')}</span>
+                        <span className="text-accent-red font-bold text-xs">🔒 M{info.festgespieltIn.join(',')}</span>
                       ) : info && info.mannschaften.some(m => m.mannschaft < stammM && m.count === 2) ? (
                         <span className="text-yellow-700 text-xs">⚠️ Warnung</span>
                       ) : (
@@ -125,10 +125,10 @@ export default function FestspielPage() {
           </table>
         </div>
 
-        <div className="mt-4 text-xs text-gray-500 space-y-1">
+        <div className="mt-4 text-xs theme-text-muted space-y-1">
           <p>● = Stammmannschaft (basierend auf Rang)</p>
           <p className="text-yellow-700">Gelb = 2 Einsätze (nächster = festgespielt)</p>
-          <p className="text-red-700">Rot = 3+ Einsätze (festgespielt)</p>
+          <p className="text-accent-red">Rot = 3+ Einsätze (festgespielt)</p>
         </div>
       </div>
     </ProtectedRoute>

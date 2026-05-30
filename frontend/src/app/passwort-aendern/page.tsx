@@ -64,7 +64,7 @@ export default function PasswortAendernPage() {
 
   const PasswordToggle = ({ show, onToggle }: { show: boolean; onToggle: () => void }) => (
     <button type="button" onClick={onToggle}
-      className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
+      className="absolute right-3 top-9 theme-text-muted hover:theme-text-muted"
       title={show ? "Passwort verbergen" : "Passwort sehen"}>
       🎾
     </button>
@@ -73,16 +73,16 @@ export default function PasswortAendernPage() {
   if (success) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full text-center">
+        <div className="card rounded-lg shadow-xl p-8 max-w-md w-full text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
             <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold theme-text mb-2">
             {isFirstLogin ? 'Erstanmeldung abgeschlossen' : 'Passwort geändert'}
           </h1>
-          <p className="text-gray-600">Weiterleitung...</p>
+          <p className="theme-text-muted">Weiterleitung...</p>
         </div>
       </div>
     );
@@ -90,12 +90,12 @@ export default function PasswortAendernPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
+      <div className="card rounded-lg shadow-xl p-8 max-w-md w-full">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold theme-text mb-2">
             {isFirstLogin ? 'Willkommen! 🎾' : isPasswordReset ? 'Passwort zurückgesetzt 🔑' : 'Passwort ändern'}
           </h1>
-          <p className="text-gray-600">
+          <p className="theme-text-muted">
             {isFirstLogin
               ? 'Bitte vervollständige dein Profil bei der ersten Anmeldung'
               : isPasswordReset
@@ -109,62 +109,62 @@ export default function PasswortAendernPage() {
           {isFirstLogin && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium theme-text-muted mb-1">
                   E-Mail-Adresse <span className="text-red-500">*</span>
                 </label>
                 <input type="email" value={email}
                   onChange={e => setEmail(e.target.value)} required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-dove-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="deine.echte@email.de" />
-                <p className="text-xs text-gray-500 mt-1">Bitte deine echte E-Mail-Adresse eintragen</p>
+                <p className="text-xs theme-text-muted mt-1">Bitte deine echte E-Mail-Adresse eintragen</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium theme-text-muted mb-1">
                   Telefonnummer <span className="text-red-500">*</span>
                 </label>
                 <input type="tel" value={telefon}
                   onChange={e => setTelefon(e.target.value)} required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-dove-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="0170 1234567" />
-                <p className="text-xs text-gray-500 mt-1">Für kurzfristige Absagen und Rückfragen</p>
+                <p className="text-xs theme-text-muted mt-1">Für kurzfristige Absagen und Rückfragen</p>
               </div>
-              <hr className="border-gray-200" />
+              <hr className="border-dove-300/30" />
             </>
           )}
 
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Aktuelles Passwort</label>
+            <label className="block text-sm font-medium theme-text-muted mb-1">Aktuelles Passwort</label>
             <input type={showCurrentPw ? "text" : "password"} value={currentPw}
               onChange={e => setCurrentPw(e.target.value)} required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+              className="w-full px-3 py-2 border border-dove-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
               placeholder="Aktuelles Passwort" />
             <PasswordToggle show={showCurrentPw} onToggle={() => setShowCurrentPw(!showCurrentPw)} />
           </div>
 
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Neues Passwort</label>
+            <label className="block text-sm font-medium theme-text-muted mb-1">Neues Passwort</label>
             <input type={showNewPw ? "text" : "password"} value={newPw}
               onChange={e => setNewPw(e.target.value)} required minLength={8}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+              className="w-full px-3 py-2 border border-dove-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
               placeholder="Mindestens 8 Zeichen" />
             <PasswordToggle show={showNewPw} onToggle={() => setShowNewPw(!showNewPw)} />
           </div>
 
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Passwort bestätigen</label>
+            <label className="block text-sm font-medium theme-text-muted mb-1">Passwort bestätigen</label>
             <input type={showConfirm ? "text" : "password"} value={confirm}
               onChange={e => setConfirm(e.target.value)} required minLength={8}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+              className="w-full px-3 py-2 border border-dove-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
               placeholder="Passwort wiederholen" />
             <PasswordToggle show={showConfirm} onToggle={() => setShowConfirm(!showConfirm)} />
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>
+            <div className="bg-accent-red/10 border border-red-200 text-accent-red px-4 py-3 rounded">{error}</div>
           )}
 
           <button type="submit" disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            className="w-full btn-primary py-2 px-4 rounded-md hover:bg-accent-blue focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
             {loading ? 'Wird gespeichert...' : isFirstLogin ? 'Profil speichern & loslegen' : 'Passwort ändern'}
           </button>
         </form>

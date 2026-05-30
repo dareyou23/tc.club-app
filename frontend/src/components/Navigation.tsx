@@ -57,6 +57,7 @@ export default function Navigation() {
     { href: '/meden/spieltage', label: 'Meden', show: istGemeldet },
     { href: '/meden/aufstellung', label: 'Aufstellung', show: isMF || isVerwalter },
     { href: '/meden/matrix', label: 'Matrix', show: isMF || isVerwalter },
+    { href: '/meden/abrechnung', label: 'Abrechnung', show: istGemeldet },
     { href: '/meden/festspiel', label: 'Festspiel', show: istGemeldet },
     { href: '/verfuegbarkeit/saisonplanung', label: 'Trainings-Planung', show: hatTrainingsgruppe },
     { href: '/profil', label: 'Profil', show: true },
@@ -70,7 +71,7 @@ export default function Navigation() {
     <Link href="/benachrichtigungen" className="relative p-1" onClick={() => setMenuOpen(false)}>
       <span className="text-xl">🔔</span>
       {unreadCount > 0 && (
-        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 border-2 border-blue-700">
+        <span className="absolute -top-1 -right-1 bg-accent-red text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
           {unreadCount > 9 ? '9+' : unreadCount}
         </span>
       )}
@@ -80,18 +81,18 @@ export default function Navigation() {
   return (
     <>
       {isImpersonating && (
-        <div className="bg-yellow-400 text-yellow-900 text-center py-1.5 text-sm font-medium">
+        <div className="bg-accent-yellow text-dove-900 text-center py-1.5 text-sm font-medium">
           👤 Du siehst die App als <span className="font-bold">{currentUser?.vorname} {currentUser?.name}</span>
           <button
             type="button"
             onClick={stopImpersonating}
-            className="ml-3 bg-yellow-600 text-white px-3 py-0.5 rounded text-xs hover:bg-yellow-700"
+            className="ml-3 bg-dove-800 text-white px-3 py-0.5 rounded text-xs hover:bg-dove-900"
           >
             Zurück zum Admin
           </button>
         </div>
       )}
-      <nav className="bg-blue-700 text-white shadow-md">
+      <nav className="theme-header border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo links */}
@@ -104,25 +105,25 @@ export default function Navigation() {
                 className="rounded-full object-cover"
                 priority
               />
-              <span className="font-bold text-lg hidden sm:inline">tc.club-app</span>
+              <span className="font-bold text-lg hidden sm:inline theme-text">tc.club-app</span>
             </Link>
 
             {/* Desktop-Links */}
             <div className="hidden md:flex items-center gap-1">
               {visibleLinks.map(l => (
                 <Link key={l.href} href={l.href}
-                  className={`px-3 py-2 rounded text-sm whitespace-nowrap ${
-                    pathname === l.href ? 'bg-blue-800' : 'hover:bg-blue-600'
+                  className={`px-3 py-2 rounded-xl text-sm whitespace-nowrap font-medium transition-all ${
+                    pathname === l.href ? 'bg-accent-cyan/20 theme-link' : 'theme-text-muted hover:bg-dove-700/20'
                   }`}>
                   {l.label}
                 </Link>
               ))}
-              <span className="text-xs opacity-75 ml-2">
+              <span className="text-xs theme-text-subtle ml-2">
                 {currentUser?.vorname}
               </span>
               {bellIcon}
               <button type="button" onClick={logout}
-                className="ml-1 px-3 py-1 text-sm bg-blue-800 rounded hover:bg-blue-900">
+                className="ml-1 px-3 py-1 text-sm rounded-xl theme-btn-inactive font-medium hover:opacity-80">
                 Logout
               </button>
             </div>
@@ -133,7 +134,7 @@ export default function Navigation() {
               <button
                 type="button"
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="p-2 rounded hover:bg-blue-600"
+                className="p-2 rounded-xl hover:bg-dove-700/20"
                 aria-label="Menü öffnen"
               >
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,28 +151,28 @@ export default function Navigation() {
 
         {/* Mobile Dropdown */}
         {menuOpen && (
-          <div className="md:hidden border-t border-blue-600 pb-3">
+          <div className="md:hidden border-t border-dove-700/20 pb-3">
             <div className="px-4 pt-2 space-y-1">
               {visibleLinks.map(l => (
                 <Link key={l.href} href={l.href}
                   onClick={() => setMenuOpen(false)}
-                  className={`block px-3 py-2.5 rounded text-base ${
-                    pathname === l.href ? 'bg-blue-800 font-medium' : 'hover:bg-blue-600'
+                  className={`block px-3 py-2.5 rounded-xl text-base font-medium ${
+                    pathname === l.href ? 'bg-accent-cyan/20 theme-link' : 'theme-text-muted hover:bg-dove-700/20'
                   }`}>
                   {l.label}
                 </Link>
               ))}
               <Link href="/benachrichtigungen"
                 onClick={() => setMenuOpen(false)}
-                className={`block px-3 py-2.5 rounded text-base ${
-                  pathname === '/benachrichtigungen' ? 'bg-blue-800 font-medium' : 'hover:bg-blue-600'
+                className={`block px-3 py-2.5 rounded-xl text-base font-medium ${
+                  pathname === '/benachrichtigungen' ? 'bg-accent-cyan/20 theme-link' : 'theme-text-muted hover:bg-dove-700/20'
                 }`}>
-                🔔 Benachrichtigungen {unreadCount > 0 && <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 ml-1">{unreadCount}</span>}
+                🔔 Benachrichtigungen {unreadCount > 0 && <span className="bg-accent-red text-white text-xs rounded-full px-1.5 py-0.5 ml-1">{unreadCount}</span>}
               </Link>
-              <div className="border-t border-blue-600 mt-2 pt-2 flex items-center justify-between px-3">
-                <span className="text-sm opacity-75">{currentUser?.vorname}</span>
+              <div className="border-t border-dove-700/20 mt-2 pt-2 flex items-center justify-between px-3">
+                <span className="text-sm theme-text-subtle">{currentUser?.vorname}</span>
                 <button type="button" onClick={() => { logout(); setMenuOpen(false); }}
-                  className="px-4 py-2 text-sm bg-blue-800 rounded hover:bg-blue-900">
+                  className="px-4 py-2 text-sm rounded-xl theme-btn-inactive font-medium">
                   Logout
                 </button>
               </div>

@@ -76,58 +76,58 @@ export default function ProfilPage() {
       <h1 className="text-2xl font-bold mb-6">Mein Profil</h1>
 
       {loading ? (
-        <p className="text-gray-500">Laden...</p>
+        <p className="theme-text-muted">Laden...</p>
       ) : (
         <div className="max-w-md space-y-6">
           {/* Info */}
-          <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-sm text-gray-500">Angemeldet als</p>
+          <div className="card rounded-lg shadow p-4">
+            <p className="text-sm theme-text-muted">Angemeldet als</p>
             <p className="font-semibold text-lg">{currentUser?.vorname} {currentUser?.name}</p>
-            <p className="text-sm text-gray-500 capitalize">{currentUser?.rolle}</p>
+            <p className="text-sm theme-text-muted capitalize">{currentUser?.rolle}</p>
           </div>
 
           {/* Kontaktdaten */}
-          <form onSubmit={handleProfilSave} className="bg-white rounded-lg shadow p-4 space-y-4">
+          <form onSubmit={handleProfilSave} className="card rounded-lg shadow p-4 space-y-4">
             <h2 className="font-semibold text-lg">Kontaktdaten</h2>
             <div>
-              <label htmlFor="profil-email" className="block text-sm font-medium text-gray-700 mb-1">E-Mail-Adresse</label>
+              <label htmlFor="profil-email" className="block text-sm font-medium theme-text-muted mb-1">E-Mail-Adresse</label>
               <input id="profil-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                className="w-full px-3 py-2 border border-dove-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div>
-              <label htmlFor="profil-telefon" className="block text-sm font-medium text-gray-700 mb-1">Telefonnummer</label>
+              <label htmlFor="profil-telefon" className="block text-sm font-medium theme-text-muted mb-1">Telefonnummer</label>
               <input id="profil-telefon" type="tel" value={telefon} onChange={e => setTelefon(e.target.value)} required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-dove-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="0170 1234567" />
             </div>
-            {profilError && <p className="text-red-600 text-sm">{profilError}</p>}
+            {profilError && <p className="text-accent-red text-sm">{profilError}</p>}
             {profilMsg && <p className="text-green-600 text-sm">{profilMsg}</p>}
             <button type="submit" disabled={saving}
-              className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:opacity-50">
+              className="w-full btn-primary py-2 rounded-md hover:bg-accent-blue disabled:opacity-50">
               {saving ? 'Speichern...' : 'Kontaktdaten speichern'}
             </button>
           </form>
 
           {/* Passwort ändern */}
-          <form onSubmit={handlePwChange} className="bg-white rounded-lg shadow p-4 space-y-4">
+          <form onSubmit={handlePwChange} className="card rounded-lg shadow p-4 space-y-4">
             <h2 className="font-semibold text-lg">Passwort ändern</h2>
             <div>
-              <label htmlFor="pw-current" className="block text-sm font-medium text-gray-700 mb-1">Aktuelles Passwort</label>
+              <label htmlFor="pw-current" className="block text-sm font-medium theme-text-muted mb-1">Aktuelles Passwort</label>
               <input id="pw-current" type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                className="w-full px-3 py-2 border border-dove-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div>
-              <label htmlFor="pw-new" className="block text-sm font-medium text-gray-700 mb-1">Neues Passwort</label>
+              <label htmlFor="pw-new" className="block text-sm font-medium theme-text-muted mb-1">Neues Passwort</label>
               <input id="pw-new" type="password" value={newPw} onChange={e => setNewPw(e.target.value)} required minLength={8}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-dove-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Mindestens 8 Zeichen" />
             </div>
             <div>
-              <label htmlFor="pw-confirm" className="block text-sm font-medium text-gray-700 mb-1">Passwort bestätigen</label>
+              <label htmlFor="pw-confirm" className="block text-sm font-medium theme-text-muted mb-1">Passwort bestätigen</label>
               <input id="pw-confirm" type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} required minLength={8}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                className="w-full px-3 py-2 border border-dove-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
-            {pwError && <p className="text-red-600 text-sm">{pwError}</p>}
+            {pwError && <p className="text-accent-red text-sm">{pwError}</p>}
             {pwMsg && <p className="text-green-600 text-sm">{pwMsg}</p>}
             <button type="submit" disabled={pwSaving}
               className="w-full bg-gray-800 text-white py-2 rounded-md hover:bg-gray-900 disabled:opacity-50">

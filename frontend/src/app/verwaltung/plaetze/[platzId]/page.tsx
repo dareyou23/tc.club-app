@@ -92,19 +92,19 @@ export default function PlatzDetailPage() {
   const verfuegbar = spieler.filter(s => s.aktiv && !gruppeIds.has(s.id));
 
   const inputCls = "w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
-  const labelCls = "block text-sm font-medium text-gray-700 mb-1";
+  const labelCls = "block text-sm font-medium theme-text-muted mb-1";
 
   return (
     <ProtectedRoute allowedRoles={['trainings_verwalter', 'admin']}>
       <h1 className="text-2xl font-bold mb-4">Platz bearbeiten</h1>
 
-      {loading ? <p className="text-gray-500">Laden...</p> : (
+      {loading ? <p className="theme-text-muted">Laden...</p> : (
         <>
           {/* Platz-Einstellungen */}
-          <div className="bg-white rounded-lg shadow p-4 mb-4">
+          <div className="card rounded-lg shadow p-4 mb-4">
             <h2 className="font-semibold mb-3">Einstellungen</h2>
             {platz && (
-              <p className="text-xs text-gray-400 mb-3">
+              <p className="text-xs theme-text-subtle mb-3">
                 {WOCHENTAGE[platz.wochentag]} · Erstellt am {new Date(platz.createdAt).toLocaleDateString('de-DE')}
               </p>
             )}
@@ -183,7 +183,7 @@ export default function PlatzDetailPage() {
             </div>
             <div className="mt-4 flex items-center gap-3">
               <button onClick={handleSave} disabled={saving}
-                className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 disabled:opacity-50">
+                className="btn-primary px-4 py-2 rounded text-sm hover:bg-accent-blue disabled:opacity-50">
                 {saving ? 'Speichern...' : 'Speichern'}
               </button>
               {msg && <span className="text-sm">{msg}</span>}
@@ -191,10 +191,10 @@ export default function PlatzDetailPage() {
           </div>
 
           {/* Buchungsgruppe */}
-          <div className="bg-white rounded-lg shadow p-4 mb-4">
+          <div className="card rounded-lg shadow p-4 mb-4">
             <h2 className="font-semibold mb-3">Buchungsgruppe ({gruppe.length})</h2>
             {gruppe.length === 0 ? (
-              <p className="text-gray-500 text-sm">Noch keine Spieler zugeordnet.</p>
+              <p className="theme-text-muted text-sm">Noch keine Spieler zugeordnet.</p>
             ) : (
               <div className="space-y-2">
                 {gruppe
@@ -203,20 +203,20 @@ export default function PlatzDetailPage() {
                   <div key={g.spielerId} className="flex justify-between items-center py-2 border-b last:border-0">
                     <span>{g.spielerName}</span>
                     <button onClick={() => handleRemove(g.spielerId)}
-                      className="text-red-600 text-sm hover:underline">Entfernen</button>
+                      className="text-accent-red text-sm hover:underline">Entfernen</button>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="card rounded-lg shadow p-4">
             <h2 className="font-semibold mb-3">Spieler hinzufügen</h2>
             <input type="text" placeholder="🔍 Spieler suchen..." value={search}
               onChange={e => setSearch(e.target.value)}
               className="w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3" />
             {verfuegbar.length === 0 ? (
-              <p className="text-gray-500 text-sm">Alle aktiven Spieler sind bereits in der Gruppe.</p>
+              <p className="theme-text-muted text-sm">Alle aktiven Spieler sind bereits in der Gruppe.</p>
             ) : (
               <div className="space-y-2">
                 {verfuegbar
@@ -230,7 +230,7 @@ export default function PlatzDetailPage() {
                   <div key={s.id} className="flex justify-between items-center py-2 border-b last:border-0">
                     <span>{s.vorname} {s.name}</span>
                     <button onClick={() => handleAdd(s.id)}
-                      className="text-blue-600 text-sm hover:underline">Hinzufügen</button>
+                      className="theme-link text-sm hover:underline">Hinzufügen</button>
                   </div>
                 ))}
               </div>

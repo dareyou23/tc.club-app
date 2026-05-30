@@ -29,13 +29,13 @@ export default function AdminSaisonsPage() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Saison-Verwaltung</h1>
         <button onClick={() => setShowForm(!showForm)}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
+          className="btn-primary px-4 py-2 rounded hover:bg-accent-blue text-sm">
           {showForm ? 'Abbrechen' : '+ Neue Saison'}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="bg-white rounded-lg shadow p-4 mb-4 grid grid-cols-2 gap-3">
+        <form onSubmit={handleCreate} className="card rounded-lg shadow p-4 mb-4 grid grid-cols-2 gap-3">
           <input placeholder="Name (z.B. Winter 2025/26)" value={form.name} required
             onChange={e => setForm({ ...form, name: e.target.value })}
             className="px-3 py-2 border rounded col-span-2" />
@@ -57,20 +57,20 @@ export default function AdminSaisonsPage() {
         </form>
       )}
 
-      {loading ? <p className="text-gray-500">Laden...</p> : (
+      {loading ? <p className="theme-text-muted">Laden...</p> : (
         <div className="space-y-3">
           {saisons.map(s => (
-            <div key={s.id} className="bg-white rounded-lg shadow p-4 flex justify-between items-center">
+            <div key={s.id} className="card rounded-lg shadow p-4 flex justify-between items-center">
               <div>
                 <h3 className="font-semibold">{s.name}</h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm theme-text-muted">
                   {s.startDatum} bis {s.endDatum}
                 </p>
               </div>
               <span className={`px-3 py-1 rounded text-sm ${
                 s.status === 'aktiv' ? 'bg-green-100 text-green-700' :
                 s.status === 'geplant' ? 'bg-yellow-100 text-yellow-700' :
-                'bg-gray-100 text-gray-700'
+                'theme-btn-inactive theme-text-muted'
               }`}>{s.status}</span>
             </div>
           ))}

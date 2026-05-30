@@ -74,18 +74,18 @@ export default function BenachrichtigungenPage() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">
           Benachrichtigungen
-          {unreadCount > 0 && <span className="ml-2 text-sm bg-red-500 text-white rounded-full px-2 py-0.5">{unreadCount} neu</span>}
+          {unreadCount > 0 && <span className="ml-2 text-sm bg-accent-red/100 text-white rounded-full px-2 py-0.5">{unreadCount} neu</span>}
         </h1>
         <div className="flex gap-2">
           {unreadCount > 0 && (
             <button type="button" onClick={handleAlleGelesen}
-              className="text-sm text-blue-600 hover:text-blue-800">
+              className="text-sm theme-link hover:text-blue-800">
               Alle gelesen
             </button>
           )}
           {isVerwalter && (
             <button type="button" onClick={() => setShowSendForm(!showSendForm)}
-              className="bg-blue-600 text-white px-3 py-1.5 rounded text-sm hover:bg-blue-700">
+              className="btn-primary px-3 py-1.5 rounded text-sm hover:bg-accent-blue">
               {showSendForm ? 'Abbrechen' : '📢 Nachricht senden'}
             </button>
           )}
@@ -99,7 +99,7 @@ export default function BenachrichtigungenPage() {
       )}
 
       {showSendForm && (
-        <form onSubmit={handleSend} className="bg-white rounded-lg shadow p-4 mb-4 space-y-3">
+        <form onSubmit={handleSend} className="card rounded-lg shadow p-4 mb-4 space-y-3">
           <h3 className="font-semibold">Nachricht an Trainingsrunde</h3>
           <select value={sendPlatzId} onChange={e => setSendPlatzId(e.target.value)} required
             aria-label="Trainingsrunde wählen"
@@ -118,34 +118,34 @@ export default function BenachrichtigungenPage() {
             onChange={e => setSendNachricht(e.target.value)}
             className="w-full px-3 py-2 border rounded text-sm" />
           <button type="submit" disabled={sending}
-            className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 disabled:opacity-50">
+            className="btn-primary px-4 py-2 rounded text-sm hover:bg-accent-blue disabled:opacity-50">
             {sending ? 'Senden...' : 'Senden'}
           </button>
         </form>
       )}
 
       {loading ? (
-        <p className="text-gray-500">Laden...</p>
+        <p className="theme-text-muted">Laden...</p>
       ) : items.length === 0 ? (
-        <p className="text-gray-500">Keine Benachrichtigungen.</p>
+        <p className="theme-text-muted">Keine Benachrichtigungen.</p>
       ) : (
         <div className="space-y-2">
           {items.map((n, i) => (
-            <div key={i} className={`bg-white rounded-lg shadow p-4 border-l-4 ${
-              n.gelesen ? 'border-gray-300' : 'border-red-500'
+            <div key={i} className={`card rounded-lg shadow p-4 border-l-4 ${
+              n.gelesen ? 'border-dove-300' : 'border-red-500'
             }`}>
               <div className="flex justify-between items-start">
                 <div className="flex-1 min-w-0">
-                  <p className={`font-semibold text-sm ${n.gelesen ? 'text-gray-600' : 'text-gray-900'}`}>{n.titel}</p>
-                  <p className="text-sm text-gray-600 mt-0.5">{n.nachricht}</p>
+                  <p className={`font-semibold text-sm ${n.gelesen ? 'theme-text-muted' : 'theme-text'}`}>{n.titel}</p>
+                  <p className="text-sm theme-text-muted mt-0.5">{n.nachricht}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1 ml-2 flex-shrink-0">
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs theme-text-subtle">
                     {new Date(n.createdAt).toLocaleDateString('de-DE')}
                   </span>
                   {!n.gelesen && (
                     <button type="button" onClick={() => handleMarkGelesen(n.SK)}
-                      className="text-xs text-blue-600 hover:text-blue-800">
+                      className="text-xs theme-link hover:text-blue-800">
                       ✓ gelesen
                     </button>
                   )}

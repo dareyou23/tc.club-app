@@ -32,7 +32,7 @@ Globals:
     MemorySize: 256
     Environment:
       Variables:
-        TABLE_NAME: !Ref ClubAppTable
+        TABLE_NAME: !Ref TrainingTable
         CORS_ORIGIN: !Ref AllowedOrigin
         JWT_SECRET: !Ref JWTSecret
         SES_FROM_EMAIL: !Ref SESFromEmail
@@ -43,12 +43,12 @@ Globals:
 
 Resources:
   # DynamoDB Table (eigene Tabelle für Datenisolierung)
-  ClubAppTable:
+  TrainingTable:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      TableName: ClubApp
+      TableName: TennisTrainingsRunden
       BillingMode: PAY_PER_REQUEST
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
@@ -90,7 +90,7 @@ Resources:
           Projection:
             ProjectionType: ALL
 
-  ClubAppApi:
+  TrainingApi:
     Type: AWS::Serverless::Api
     Properties:
       StageName: prod
@@ -170,7 +170,7 @@ Resources:
         Login:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /auth/login
             Method: post
             Auth:
@@ -178,7 +178,7 @@ Resources:
         Logout:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /auth/logout
             Method: post
             Auth:
@@ -186,7 +186,7 @@ Resources:
         PasswortVergessen:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /auth/passwort-vergessen
             Method: post
             Auth:
@@ -194,14 +194,14 @@ Resources:
         Refresh:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /auth/refresh
             Method: post
             Auth:
               Authorizer: NONE
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
         - Statement:
             - Effect: Allow
               Action:
@@ -218,30 +218,30 @@ Resources:
         ChangePassword:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /auth/change-password
             Method: post
         ResetPassword:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /auth/reset-password
             Method: post
         Impersonate:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /auth/impersonate
             Method: post
         Erstanmeldung:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /auth/erstanmeldung
             Method: post
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   # Saison
   ListSaisonsFunction:
@@ -253,12 +253,12 @@ Resources:
         ListSaisons:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /saisons
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   GetAktiveSaisonFunction:
     Type: AWS::Serverless::Function
@@ -269,12 +269,12 @@ Resources:
         GetAktiveSaison:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /saisons/aktiv
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   CreateSaisonFunction:
     Type: AWS::Serverless::Function
@@ -285,12 +285,12 @@ Resources:
         CreateSaison:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /saisons
             Method: post
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   AktiviereSaisonFunction:
     Type: AWS::Serverless::Function
@@ -301,12 +301,12 @@ Resources:
         AktiviereSaison:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /saisons/{id}/aktivieren
             Method: put
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   EnsureSaisonsFunction:
     Type: AWS::Serverless::Function
@@ -317,12 +317,12 @@ Resources:
         EnsureSaisons:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /saisons/ensure
             Method: post
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   # Scheduled: prüft alle 4 Wochen ob neue Saisons angelegt werden müssen
   ScheduledEnsureSaisonsFunction:
@@ -339,7 +339,7 @@ Resources:
             Enabled: true
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   # Hallenplatz
   ListPlaetzeFunction:
@@ -351,12 +351,12 @@ Resources:
         ListPlaetze:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /plaetze
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   CreatePlatzFunction:
     Type: AWS::Serverless::Function
@@ -367,12 +367,12 @@ Resources:
         CreatePlatz:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /plaetze
             Method: post
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   GetPlatzFunction:
     Type: AWS::Serverless::Function
@@ -383,12 +383,12 @@ Resources:
         GetPlatz:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /plaetze/{id}
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   UpdatePlatzFunction:
     Type: AWS::Serverless::Function
@@ -399,12 +399,12 @@ Resources:
         UpdatePlatz:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /plaetze/{id}
             Method: put
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   DeletePlatzFunction:
     Type: AWS::Serverless::Function
@@ -415,12 +415,12 @@ Resources:
         DeletePlatz:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /plaetze/{id}
             Method: delete
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   GetPlatzSlotsFunction:
     Type: AWS::Serverless::Function
@@ -431,12 +431,12 @@ Resources:
         GetPlatzSlots:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /plaetze/{id}/slots
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   # Buchungsgruppe
   GetGruppeFunction:
@@ -448,12 +448,12 @@ Resources:
         GetGruppe:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /plaetze/{id}/gruppe
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   AddToGruppeFunction:
     Type: AWS::Serverless::Function
@@ -464,12 +464,12 @@ Resources:
         AddToGruppe:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /plaetze/{id}/gruppe
             Method: post
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   RemoveFromGruppeFunction:
     Type: AWS::Serverless::Function
@@ -480,12 +480,12 @@ Resources:
         RemoveFromGruppe:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /plaetze/{id}/gruppe/{spielerId}
             Method: delete
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   # Verfügbarkeit
   GetSlotVerfuegbarkeitFunction:
@@ -497,12 +497,12 @@ Resources:
         GetSlotVerfuegbarkeit:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /slots/{slotId}/verfuegbarkeit
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   SetVerfuegbarkeitFunction:
     Type: AWS::Serverless::Function
@@ -513,12 +513,12 @@ Resources:
         SetVerfuegbarkeit:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /verfuegbarkeit/{slotId}
             Method: put
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   # Zuweisung
   BerechneZuweisungFunction:
@@ -530,12 +530,12 @@ Resources:
         BerechneZuweisung:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /zuweisungen/berechnen
             Method: post
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   GetSlotZuweisungenFunction:
     Type: AWS::Serverless::Function
@@ -546,12 +546,12 @@ Resources:
         GetSlotZuweisungen:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /slots/{slotId}/zuweisungen
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   SchliesseSlotAbFunction:
     Type: AWS::Serverless::Function
@@ -562,12 +562,12 @@ Resources:
         SchliesseSlotAb:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /slots/{slotId}/abschliessen
             Method: post
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   ToggleZuweisungFunction:
     Type: AWS::Serverless::Function
@@ -578,12 +578,12 @@ Resources:
         ToggleZuweisung:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /slots/{slotId}/zuweisungen/{spielerId}
             Method: put
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   # Spontan-Anmeldung
   AnmeldenFunction:
@@ -595,18 +595,18 @@ Resources:
         Anmelden:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /slots/{slotId}/anmelden
             Method: post
         AnmeldenHalb:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /slots/{slotId}/anmelden/halb
             Method: post
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   AbmeldenFunction:
     Type: AWS::Serverless::Function
@@ -617,12 +617,12 @@ Resources:
         Abmelden:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /slots/{slotId}/anmelden
             Method: delete
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   # Spieler
   ListSpielerFunction:
@@ -634,12 +634,12 @@ Resources:
         ListSpieler:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /spieler
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   CreateSpielerFunction:
     Type: AWS::Serverless::Function
@@ -650,12 +650,12 @@ Resources:
         CreateSpieler:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /spieler
             Method: post
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   UpdateSpielerFunction:
     Type: AWS::Serverless::Function
@@ -666,12 +666,12 @@ Resources:
         UpdateSpieler:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /spieler/{id}
             Method: put
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   DeaktiviereSpielerFunction:
     Type: AWS::Serverless::Function
@@ -682,12 +682,12 @@ Resources:
         DeaktiviereSpieler:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /spieler/{id}/deaktivieren
             Method: put
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   DeleteSpielerFunction:
     Type: AWS::Serverless::Function
@@ -698,12 +698,12 @@ Resources:
         DeleteSpieler:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /spieler/{id}
             Method: delete
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   # Profil
   GetProfilFunction:
@@ -715,12 +715,12 @@ Resources:
         GetProfil:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /profil
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   UpdateProfilFunction:
     Type: AWS::Serverless::Function
@@ -731,12 +731,12 @@ Resources:
         UpdateProfil:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /profil
             Method: put
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   # Kosten
   MeinKostenkontoFunction:
@@ -748,12 +748,12 @@ Resources:
         MeinKostenkonto:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /kosten/mein-konto
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   GruppenKostenFunction:
     Type: AWS::Serverless::Function
@@ -764,12 +764,12 @@ Resources:
         GruppenKosten:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /kosten/gruppe/{id}
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   # Benachrichtigungen
   GetBenachrichtigungenFunction:
@@ -781,12 +781,12 @@ Resources:
         GetBenachrichtigungen:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /benachrichtigungen
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   MarkGelesenFunction:
     Type: AWS::Serverless::Function
@@ -797,12 +797,12 @@ Resources:
         MarkGelesen:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /benachrichtigungen/gelesen
             Method: put
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   UnreadCountFunction:
     Type: AWS::Serverless::Function
@@ -813,12 +813,12 @@ Resources:
         UnreadCount:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /benachrichtigungen/ungelesen/count
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   SendNachrichtFunction:
     Type: AWS::Serverless::Function
@@ -829,12 +829,12 @@ Resources:
         SendNachricht:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /benachrichtigungen/senden
             Method: post
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   # --- Meden ---
 
@@ -847,12 +847,12 @@ Resources:
         ListMedenSpieltage:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /meden/spieltage
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   GetAllMedenVerfuegbarkeitFunction:
     Type: AWS::Serverless::Function
@@ -863,12 +863,12 @@ Resources:
         GetAllMedenVerfuegbarkeit:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /meden/verfuegbarkeit/alle
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   SetMedenVerfuegbarkeitFunction:
     Type: AWS::Serverless::Function
@@ -879,12 +879,12 @@ Resources:
         SetMedenVerfuegbarkeit:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /meden/verfuegbarkeit
             Method: post
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   GetAufstellungFunction:
     Type: AWS::Serverless::Function
@@ -895,12 +895,12 @@ Resources:
         GetAufstellung:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /meden/aufstellung/{spieltagId}
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   SetAufstellungFunction:
     Type: AWS::Serverless::Function
@@ -911,12 +911,12 @@ Resources:
         SetAufstellung:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /meden/aufstellung/{spieltagId}
             Method: post
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
 
   GetFestspielStatusFunction:
     Type: AWS::Serverless::Function
@@ -927,12 +927,94 @@ Resources:
         GetFestspielStatus:
           Type: Api
           Properties:
-            RestApiId: !Ref ClubAppApi
+            RestApiId: !Ref TrainingApi
             Path: /meden/festspiel-status
             Method: get
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
+
+  # --- Meden Abrechnung ---
+
+  CreateAbrechnungFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/meden-abrechnung.createAbrechnung
+      Events:
+        CreateAbrechnung:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TrainingApi
+            Path: /meden/abrechnung/spieltag/{spieltagId}
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TrainingTable
+
+  GetAbrechnungFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/meden-abrechnung.getAbrechnung
+      Events:
+        GetAbrechnung:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TrainingApi
+            Path: /meden/abrechnung/spieltag/{spieltagId}
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref TrainingTable
+
+  DeleteAbrechnungFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/meden-abrechnung.deleteAbrechnung
+      Events:
+        DeleteAbrechnung:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TrainingApi
+            Path: /meden/abrechnung/spieltag/{spieltagId}/{kostenId}
+            Method: delete
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TrainingTable
+
+  GetSaldoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/meden-abrechnung.getSaldo
+      Events:
+        GetSaldo:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TrainingApi
+            Path: /meden/abrechnung/saldo/{mannschaft}
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref TrainingTable
+
+  GetMeinSaldoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: handlers/meden-abrechnung.getMeinSaldo
+      Events:
+        GetMeinSaldo:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TrainingApi
+            Path: /meden/abrechnung/mein-saldo
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref TrainingTable
 
   # --- Sync: MedenSaison → ClubApp (temporär) ---
 
@@ -951,11 +1033,11 @@ Resources:
             Enabled: true
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref ClubAppTable
+            TableName: !Ref TrainingTable
         - DynamoDBReadPolicy:
             TableName: MedenSaison
 
 Outputs:
-  ClubAppApiUrl:
+  TrainingApiUrl:
     Description: API Gateway endpoint URL
-    Value: !Sub "https://${ClubAppApi}.execute-api.${AWS::Region}.amazonaws.com/prod/"
+    Value: !Sub "https://${TrainingApi}.execute-api.${AWS::Region}.amazonaws.com/prod/"

@@ -78,7 +78,7 @@ export default function AufstellungPage() {
     if (res.success && res.data) setWarnungen(res.data.warnungen || []);
   };
 
-  if (!loaded) return <div className="text-center py-12 text-gray-500">Laden...</div>;
+  if (!loaded) return <div className="text-center py-12 theme-text-muted">Laden...</div>;
   if (!isMF && !isVerwalter) {
     return <ProtectedRoute allowedRoles={['trainings_verwalter', 'admin']}><div /></ProtectedRoute>;
   }
@@ -99,8 +99,8 @@ export default function AufstellungPage() {
       <button key={s.id} type="button" onClick={() => setSelectedSt(active ? '' : s.id)}
         className={`w-full text-left px-3 py-2 rounded border text-sm ${
           active ? 'bg-blue-100 border-blue-500 font-medium' :
-          past ? 'bg-gray-50 text-gray-400 border-gray-200' :
-          'bg-white border-gray-200 hover:bg-blue-50'
+          past ? 'theme-btn-inactive theme-text-subtle border-dove-300/30' :
+          'card border-dove-300/30 hover:bg-blue-50'
         }`}>
         <span className="font-semibold">{s.mannschaft}. Mannschaft</span> · {formatDatum(s.datum)} {s.uhrzeit} · {s.heimspiel ? '🏠' : '🚗'} vs {s.gegner}
       </button>
@@ -110,29 +110,29 @@ export default function AufstellungPage() {
   return (
     <ProtectedRoute>
       <div className="space-y-4">
-        <h2 className="text-lg font-bold text-gray-800">Aufstellung</h2>
+        <h2 className="text-lg font-bold theme-text">Aufstellung</h2>
 
         {kernSt.length > 0 && (
           <div>
-            <h3 className="text-sm font-bold text-blue-700 mb-2">Meine Mannschaft ({meineKern}. Mannschaft)</h3>
+            <h3 className="text-sm font-bold theme-link mb-2">Meine Mannschaft ({meineKern}. Mannschaft)</h3>
             <div className="space-y-1">{kernSt.map(renderSpieltagButton)}</div>
           </div>
         )}
 
         {kernSt.length > 0 && andereSt.length > 0 && (
-          <hr className="border-t-2 border-gray-300 my-2" />
+          <hr className="border-t-2 border-dove-300 my-2" />
         )}
 
         {andereSt.length > 0 && (
           <div>
-            {meineKern && <h3 className="text-sm font-bold text-gray-500 mb-2">Weitere Mannschaften</h3>}
+            {meineKern && <h3 className="text-sm font-bold theme-text-muted mb-2">Weitere Mannschaften</h3>}
             <div className="space-y-1">{andereSt.map(renderSpieltagButton)}</div>
           </div>
         )}
 
         {selectedSt && (
           <div className="mt-4 pt-4 border-t-2 border-blue-300">
-            <h3 className="font-bold text-gray-800 mb-2">
+            <h3 className="font-bold theme-text mb-2">
               {st?.mannschaft}. Mannschaft · {st && formatDatum(st.datum)} vs {st?.gegner}
             </h3>
 
@@ -142,7 +142,7 @@ export default function AufstellungPage() {
               </div>
             )}
 
-            <p className="text-sm text-gray-600 mb-2">
+            <p className="text-sm theme-text-muted mb-2">
               Aufgestellt: {aufstellung.length} Spieler · Klicke um hinzuzufügen/entfernen
             </p>
 
@@ -152,25 +152,25 @@ export default function AufstellungPage() {
                 const isSelected = aufstellung.includes(s.id);
                 const verfStatus = verfForSt[s.id] || '';
                 const isAushelfen = stMannschaft < stammM;
-                let bgClass = 'bg-white';
+                let bgClass = 'card';
                 if (isSelected) bgClass = 'bg-blue-100 border-blue-400';
                 else if (verfStatus === 'ja') bgClass = 'bg-green-50';
                 else if (verfStatus === 'vielleicht') bgClass = 'bg-yellow-50';
-                else if (verfStatus === 'nein') bgClass = 'bg-red-50 opacity-50';
+                else if (verfStatus === 'nein') bgClass = 'bg-accent-red/10 opacity-50';
 
                 return (
                   <button key={s.id} type="button" onClick={() => toggleSpieler(s.id)}
                     className={`w-full text-left px-3 py-2 rounded border text-sm flex justify-between items-center ${bgClass}`}>
                     <div>
                       <span className="font-medium">{s.vorname} {s.name}</span>
-                      <span className="text-gray-400 ml-2">Ra.{s.setzlistePosition} · LK{s.lk ? Number(s.lk).toFixed(1) : '?'}</span>
+                      <span className="theme-text-subtle ml-2">Ra.{s.setzlistePosition} · LK{s.lk ? Number(s.lk).toFixed(1) : '?'}</span>
                       {isAushelfen && <span className="ml-2 text-orange-600 text-xs">↑ Aushilfe (Stamm: M{stammM})</span>}
                     </div>
                     <div className="flex items-center gap-2">
                       {verfStatus === 'ja' && <span className="text-green-600 text-xs">✅</span>}
                       {verfStatus === 'vielleicht' && <span className="text-yellow-600 text-xs">❓</span>}
-                      {verfStatus === 'nein' && <span className="text-red-600 text-xs">❌</span>}
-                      {isSelected && <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded">Aufgestellt</span>}
+                      {verfStatus === 'nein' && <span className="text-accent-red text-xs">❌</span>}
+                      {isSelected && <span className="btn-primary text-xs px-2 py-0.5 rounded">Aufgestellt</span>}
                     </div>
                   </button>
                 );
@@ -178,7 +178,7 @@ export default function AufstellungPage() {
             </div>
 
             <button type="button" onClick={handleSave} disabled={saving || aufstellung.length === 0}
-              className="w-full mt-3 py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 disabled:opacity-50">
+              className="w-full mt-3 py-2 btn-primary rounded font-medium hover:bg-accent-blue disabled:opacity-50">
               {saving ? 'Speichern...' : `Aufstellung speichern (${aufstellung.length} Spieler)`}
             </button>
           </div>

@@ -159,17 +159,17 @@ export default function NeueTrainingszeitPage() {
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-300 rounded-lg p-3 mb-4 text-sm text-red-700">{error}</div>
+          <div className="bg-accent-red/10 border border-red-300 rounded-lg p-3 mb-4 text-sm text-accent-red">{error}</div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-5 space-y-4">
+        <form onSubmit={handleSubmit} className="card rounded-lg shadow p-5 space-y-4">
           {/* Saison-Auswahl (Checkboxen) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium theme-text-muted mb-2">
               Saison <span className="text-red-500">*</span>
             </label>
             {loadingData ? (
-              <p className="text-gray-500 text-sm">Laden...</p>
+              <p className="theme-text-muted text-sm">Laden...</p>
             ) : (
               <div className="space-y-2">
                 {saisons.map(s => (
@@ -177,10 +177,10 @@ export default function NeueTrainingszeitPage() {
                     <input type="checkbox"
                       checked={selectedSaisons.has(s.id)}
                       onChange={() => toggleSaison(s.id)}
-                      className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                      className="w-4 h-4 theme-link rounded border-dove-300 focus:ring-blue-500" />
                     <span className="text-sm">
                       {s.name}
-                      <span className="text-gray-400 ml-1">({s.startDatum} – {s.endDatum})</span>
+                      <span className="theme-text-subtle ml-1">({s.startDatum} – {s.endDatum})</span>
                       {s.status === 'aktiv' && <span className="ml-1 text-green-600 text-xs">(laufend)</span>}
                     </span>
                   </label>
@@ -191,24 +191,24 @@ export default function NeueTrainingszeitPage() {
 
           {/* Trainer (optional) */}
           <div>
-            <label htmlFor="trainer" className="block text-sm font-medium text-gray-700 mb-1">
-              Trainer <span className="text-gray-400 font-normal">(optional)</span>
+            <label htmlFor="trainer" className="block text-sm font-medium theme-text-muted mb-1">
+              Trainer <span className="theme-text-subtle font-normal">(optional)</span>
             </label>
             <input id="trainer" type="text" value={trainerName}
               onChange={e => setTrainerName(e.target.value)}
               placeholder="z.B. Thomas Müller"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full px-3 py-2 border border-dove-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           {/* Wochentag (Pflicht) */}
           <div>
-            <label htmlFor="wochentag" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="wochentag" className="block text-sm font-medium theme-text-muted mb-1">
               Wochentag <span className="text-red-500">*</span>
             </label>
             <select id="wochentag" value={wochentag}
               onChange={e => setWochentag(e.target.value === '' ? '' : parseInt(e.target.value))}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              className="w-full px-3 py-2 border border-dove-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Bitte wählen...</option>
               {WOCHENTAGE.map((tag, i) => (
                 <option key={i} value={i}>{tag}</option>
@@ -218,37 +218,37 @@ export default function NeueTrainingszeitPage() {
 
           {/* Halle Nr / Platz Nr (Pflicht) */}
           <div>
-            <label htmlFor="halleNr" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="halleNr" className="block text-sm font-medium theme-text-muted mb-1">
               {isSommer ? 'Platz Nr.' : 'Halle Nr.'} <span className="text-red-500">*</span>
             </label>
             <input id="halleNr" type="text" value={halleNr}
               onChange={e => setHalleNr(e.target.value)}
               placeholder={isSommer ? 'z.B. 5' : 'z.B. 3'}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full px-3 py-2 border border-dove-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
 
           {/* Uhrzeit von - bis (Pflicht) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium theme-text-muted mb-1">
               Uhrzeit <span className="text-red-500">*</span>
             </label>
             <div className="flex items-center gap-2">
               <select value={uhrzeitVon}
                 onChange={e => setUhrzeitVon(e.target.value)}
                 required aria-label="Uhrzeit von"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                className="flex-1 px-3 py-2 border border-dove-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">Von</option>
                 {Array.from({ length: 16 }, (_, i) => i + 7).map(h => (
                   <option key={h} value={`${h.toString().padStart(2, '0')}:00`}>{h}:00</option>
                 ))}
               </select>
-              <span className="text-gray-500">bis</span>
+              <span className="theme-text-muted">bis</span>
               <select value={uhrzeitBis}
                 onChange={e => setUhrzeitBis(e.target.value)}
                 required aria-label="Uhrzeit bis"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                className="flex-1 px-3 py-2 border border-dove-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">Bis</option>
                 {Array.from({ length: 16 }, (_, i) => i + 8).map(h => (
                   <option key={h} value={`${h.toString().padStart(2, '0')}:00`}>{h}:00</option>
@@ -256,7 +256,7 @@ export default function NeueTrainingszeitPage() {
               </select>
             </div>
             {uhrzeitVon && uhrzeitBis && berechneMinuten(uhrzeitVon, uhrzeitBis) > 0 && (
-              <p className="text-xs text-gray-500 mt-1">{berechneMinuten(uhrzeitVon, uhrzeitBis) / 60} Stunde{berechneMinuten(uhrzeitVon, uhrzeitBis) > 60 ? 'n' : ''}</p>
+              <p className="text-xs theme-text-muted mt-1">{berechneMinuten(uhrzeitVon, uhrzeitBis) / 60} Stunde{berechneMinuten(uhrzeitVon, uhrzeitBis) > 60 ? 'n' : ''}</p>
             )}
           </div>
 
@@ -266,35 +266,35 @@ export default function NeueTrainingszeitPage() {
               <input type="checkbox"
                 checked={nurHallentraining}
                 onChange={e => setNurHallentraining(e.target.checked)}
-                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-              <span className="text-sm font-medium text-gray-700">Ausschließlich Hallentraining</span>
+                className="w-4 h-4 theme-link rounded border-dove-300 focus:ring-blue-500" />
+              <span className="text-sm font-medium theme-text-muted">Ausschließlich Hallentraining</span>
             </label>
           </div>
 
           {/* Spielerauswahl */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium theme-text-muted">
                 Spieler auswählen ({selectedSpieler.size} ausgewählt)
               </label>
               <button type="button" onClick={selectAll}
-                className="text-xs text-blue-600 hover:text-blue-800">
+                className="text-xs theme-link hover:text-blue-800">
                 {selectedSpieler.size === spieler.length ? 'Keine auswählen' : 'Alle auswählen'}
               </button>
             </div>
             {loadingData ? (
-              <p className="text-gray-500 text-sm">Laden...</p>
+              <p className="theme-text-muted text-sm">Laden...</p>
             ) : spieler.length === 0 ? (
-              <p className="text-gray-500 text-sm">Keine Spieler vorhanden.</p>
+              <p className="theme-text-muted text-sm">Keine Spieler vorhanden.</p>
             ) : (
-              <div className="border border-gray-200 rounded-md max-h-64 overflow-y-auto">
+              <div className="border border-dove-300/30 rounded-md max-h-64 overflow-y-auto">
                 {spieler.map(s => (
                   <label key={s.id}
-                    className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0">
+                    className="flex items-center gap-3 px-3 py-2 hover:theme-btn-inactive cursor-pointer border-b border-dove-200/30 last:border-0">
                     <input type="checkbox"
                       checked={selectedSpieler.has(s.id)}
                       onChange={() => toggleSpieler(s.id)}
-                      className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                      className="w-4 h-4 theme-link rounded border-dove-300 focus:ring-blue-500" />
                     <span className="text-sm">{s.name}, {s.vorname}</span>
                   </label>
                 ))}
@@ -305,11 +305,11 @@ export default function NeueTrainingszeitPage() {
           {/* Buttons */}
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={() => router.push('/verwaltung/plaetze')}
-              className="flex-1 py-2 px-4 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm">
+              className="flex-1 py-2 px-4 border border-dove-300 rounded-md theme-text-muted hover:theme-btn-inactive text-sm">
               Abbrechen
             </button>
             <button type="submit" disabled={saving || selectedSaisons.size === 0}
-              className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 text-sm">
+              className="flex-1 py-2 px-4 btn-primary rounded-md hover:bg-accent-blue disabled:opacity-50 text-sm">
               {saving ? 'Wird angelegt...' : 'Trainingszeit anlegen'}
             </button>
           </div>

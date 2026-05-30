@@ -106,9 +106,9 @@ export default function KalenderPage() {
   }
 
   function statusColor(count: number) {
-    if (count < 4) return { bg: 'bg-red-50', border: 'border-red-300', badge: 'bg-red-100 text-red-700' };
-    if (count % 2 !== 0) return { bg: 'bg-amber-50', border: 'border-amber-300', badge: 'bg-amber-100 text-amber-700' };
-    return { bg: 'bg-emerald-50', border: 'border-emerald-300', badge: 'bg-emerald-100 text-emerald-700' };
+    if (count < 4) return { bg: 'bg-accent-red/10', border: 'border-red-300', badge: 'bg-red-100 text-accent-red' };
+    if (count % 2 !== 0) return { bg: 'bg-accent-yellow/10', border: 'border-amber-300', badge: 'bg-amber-100 text-accent-yellow' };
+    return { bg: 'bg-accent-green/10', border: 'border-emerald-300', badge: 'bg-emerald-100 text-accent-green' };
   }
 
   function formatDatum(datum: string): string {
@@ -131,8 +131,8 @@ export default function KalenderPage() {
       <div className="space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Hallo {currentUser?.vorname} 👋</h1>
-          <p className="text-gray-500 mt-1">Deine nächsten Termine</p>
+          <h1 className="text-2xl font-bold theme-text">Hallo {currentUser?.vorname} 👋</h1>
+          <p className="theme-text-muted mt-1">Deine nächsten Termine</p>
         </div>
 
         {/* Meden-Spieltage */}
@@ -156,13 +156,13 @@ export default function KalenderPage() {
                   const myStatus = myId ? (medenVerf[st.id]?.[myId] || '') : '';
                   return (
                     <Link key={st.id} href="/meden/spieltage"
-                      className={`card-accent block p-4 ${st.mannschaft === kern ? 'border-blue-500' : 'border-gray-200'}`}>
+                      className={`card-accent block p-4 ${st.mannschaft === kern ? 'border-blue-500' : 'border-dove-300/30'}`}>
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="font-semibold text-gray-900">M{st.mannschaft} · {formatDatumShort(st.datum)} · {st.uhrzeit}</p>
-                          <p className="text-sm text-gray-500 mt-0.5">{st.heimspiel ? '🏠 Heim' : '🚗 Auswärts'} vs {st.gegner}</p>
+                          <p className="font-semibold theme-text">M{st.mannschaft} · {formatDatumShort(st.datum)} · {st.uhrzeit}</p>
+                          <p className="text-sm theme-text-muted mt-0.5">{st.heimspiel ? '🏠 Heim' : '🚗 Auswärts'} vs {st.gegner}</p>
                         </div>
-                        <span className={`badge ${myStatus === 'ja' ? 'bg-emerald-100 text-emerald-700' : myStatus === 'vielleicht' ? 'bg-amber-100 text-amber-700' : myStatus === 'nein' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'}`}>
+                        <span className={`badge ${myStatus === 'ja' ? 'bg-emerald-100 text-accent-green' : myStatus === 'vielleicht' ? 'bg-amber-100 text-accent-yellow' : myStatus === 'nein' ? 'bg-red-100 text-accent-red' : 'theme-btn-inactive theme-text-muted'}`}>
                           {myStatus === 'ja' ? '✅ Dabei' : myStatus === 'vielleicht' ? '❓ Unsicher' : myStatus === 'nein' ? '❌ Nein' : '—'}
                         </span>
                       </div>
@@ -181,7 +181,7 @@ export default function KalenderPage() {
           </div>
         ) : upcoming.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-400 text-lg">Keine kommenden Termine</p>
+            <p className="theme-text-subtle text-lg">Keine kommenden Termine</p>
           </div>
         ) : (
           <section className="space-y-6">
@@ -195,8 +195,8 @@ export default function KalenderPage() {
                       <div key={slot.slotId} className={`card-accent p-5 ${colors.border}`}>
                         <div className="flex justify-between items-start">
                           <div>
-                            <h3 className="font-semibold text-gray-900">{slot.platzName}</h3>
-                            <p className="text-sm text-gray-500 mt-0.5">{slot.uhrzeit} Uhr · {slot.platzOrt}</p>
+                            <h3 className="font-semibold theme-text">{slot.platzName}</h3>
+                            <p className="text-sm theme-text-muted mt-0.5">{slot.uhrzeit} Uhr · {slot.platzOrt}</p>
                           </div>
                           {slot.platzTyp === 'saisonplanung' ? (
                             <Link href={`/verfuegbarkeit/saisonplanung?platzId=${slot.platzId}`}
@@ -212,7 +212,7 @@ export default function KalenderPage() {
                               {slot.abgelehntCount > 0 && (
                                 <button type="button"
                                   onClick={() => setExpandedAbgelehnt(expandedAbgelehnt === slot.slotId ? null : slot.slotId)}
-                                  className="badge bg-gray-100 text-gray-500 hover:bg-gray-200 cursor-pointer">
+                                  className="badge theme-btn-inactive theme-text-muted hover:bg-gray-200 cursor-pointer">
                                   {slot.abgelehntCount} abgelehnt
                                 </button>
                               )}
@@ -221,21 +221,21 @@ export default function KalenderPage() {
                         </div>
 
                         {slot.verfuegbareSpieler.length > 0 && (
-                          <p className="text-xs text-gray-400 mt-3">
+                          <p className="text-xs theme-text-subtle mt-3">
                             🎾 {slot.verfuegbareSpieler.join(', ')}
                           </p>
                         )}
 
                         {expandedAbgelehnt === slot.slotId && slot.abgelehntSpieler.length > 0 && (
-                          <div className="mt-3 p-3 bg-gray-50 rounded-lg text-xs text-gray-500">
+                          <div className="mt-3 p-3 theme-btn-inactive rounded-lg text-xs theme-text-muted">
                             <p className="font-medium mb-1">Können nicht:</p>
                             {slot.abgelehntSpieler.join(', ')}
                           </div>
                         )}
 
                         {slot.platzTyp !== 'saisonplanung' && (
-                          <div className="mt-4 pt-4 border-t border-gray-100">
-                            <p className="text-xs text-gray-400 mb-3">
+                          <div className="mt-4 pt-4 border-t border-dove-200/30">
+                            <p className="text-xs theme-text-subtle mb-3">
                               {slot.meineVerfuegbarkeit === 'verfuegbar' ? '✅ Du kannst' :
                                slot.meineVerfuegbarkeit === 'nicht_verfuegbar' ? '❌ Kannst nicht' :
                                '❓ Noch offen'}
@@ -245,7 +245,7 @@ export default function KalenderPage() {
                                 onClick={() => handleVerfuegbarkeit(slot.slotId, 'verfuegbar')}
                                 className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all active:scale-[0.98] ${
                                   slot.meineVerfuegbarkeit === 'verfuegbar'
-                                    ? 'bg-emerald-600 text-white shadow-sm' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                                    ? 'bg-accent-green text-white shadow-sm' : 'bg-accent-green/10 text-accent-green border border-emerald-200 hover:bg-emerald-100'
                                 } disabled:opacity-50`}>
                                 {saving === slot.slotId ? '...' : '✅ Kann'}
                               </button>
@@ -253,7 +253,7 @@ export default function KalenderPage() {
                                 onClick={() => handleVerfuegbarkeit(slot.slotId, 'nicht_verfuegbar')}
                                 className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all active:scale-[0.98] ${
                                   slot.meineVerfuegbarkeit === 'nicht_verfuegbar'
-                                    ? 'bg-red-600 text-white shadow-sm' : 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
+                                    ? 'bg-accent-red text-white shadow-sm' : 'bg-accent-red/10 text-accent-red border border-red-200 hover:bg-red-100'
                                 } disabled:opacity-50`}>
                                 {saving === slot.slotId ? '...' : '❌ Kann nicht'}
                               </button>
@@ -271,9 +271,9 @@ export default function KalenderPage() {
 
         {/* Meine Hallenplätze */}
         <section>
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Meine Hallenplätze</h2>
+          <h2 className="text-lg font-bold theme-text mb-4">Meine Hallenplätze</h2>
           {plaetze.length === 0 ? (
-            <p className="text-gray-400">Keine Hallenplätze in der aktuellen Saison.</p>
+            <p className="theme-text-subtle">Keine Hallenplätze in der aktuellen Saison.</p>
           ) : (
             <div className="space-y-4">
               {plaetze.map(p => (
@@ -282,8 +282,8 @@ export default function KalenderPage() {
                 }`}>
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-semibold text-gray-900">{p.name}</h3>
-                      <p className="text-sm text-gray-500 mt-0.5">
+                      <h3 className="font-semibold theme-text">{p.name}</h3>
+                      <p className="text-sm theme-text-muted mt-0.5">
                         {WOCHENTAGE[p.wochentag]} {p.uhrzeit}{p.uhrzeitBis ? `–${p.uhrzeitBis}` : ''} · {p.ort}
                       </p>
                     </div>
@@ -297,14 +297,14 @@ export default function KalenderPage() {
 
                   {p.trainerName && (
                     <div className="mt-3">
-                      <span className="badge bg-emerald-100 text-emerald-700">🎓 {p.trainerName}</span>
+                      <span className="badge bg-emerald-100 text-accent-green">🎓 {p.trainerName}</span>
                     </div>
                   )}
 
                   {p.platzTyp !== 'saisonplanung' && !p.trainerName && (
                     <>
                       <div className="mt-3 flex gap-2">
-                        <span className="badge bg-blue-50 text-blue-600">👥 {p.gruppengroesse} Spieler</span>
+                        <span className="badge bg-blue-50 theme-link">👥 {p.gruppengroesse} Spieler</span>
                         {p.anzahlPlaetze > 1 && (
                           <span className="badge bg-indigo-50 text-indigo-600">{p.anzahlPlaetze} Plätze</span>
                         )}
@@ -313,15 +313,15 @@ export default function KalenderPage() {
                       {(allSlotsByPlatz[p.id] || []).map(slot => {
                         const colors = statusColor(slot.verfuegbarCount);
                         return (
-                          <div key={slot.slotId} className="mt-4 pt-4 border-t border-gray-100">
+                          <div key={slot.slotId} className="mt-4 pt-4 border-t border-dove-200/30">
                             <div className="flex justify-between items-center mb-3">
-                              <span className="text-sm font-medium text-gray-700">{formatDatumShort(slot.datum)} · {slot.uhrzeit}</span>
+                              <span className="text-sm font-medium theme-text-muted">{formatDatumShort(slot.datum)} · {slot.uhrzeit}</span>
                               <span className={`badge ${colors.badge}`}>{slot.verfuegbarCount} Spieler</span>
                             </div>
                             {slot.verfuegbareSpieler.length > 0 && (
-                              <p className="text-xs text-gray-400 mb-3">🎾 {slot.verfuegbareSpieler.join(', ')}</p>
+                              <p className="text-xs theme-text-subtle mb-3">🎾 {slot.verfuegbareSpieler.join(', ')}</p>
                             )}
-                            <p className="text-xs text-gray-400 mb-3">
+                            <p className="text-xs theme-text-subtle mb-3">
                               {slot.meineVerfuegbarkeit === 'verfuegbar' ? '✅ Du kannst' :
                                slot.meineVerfuegbarkeit === 'nicht_verfuegbar' ? '❌ Kannst nicht' :
                                '❓ Noch offen'}
@@ -331,7 +331,7 @@ export default function KalenderPage() {
                                 onClick={() => handleVerfuegbarkeit(slot.slotId, 'verfuegbar')}
                                 className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all active:scale-[0.98] ${
                                   slot.meineVerfuegbarkeit === 'verfuegbar'
-                                    ? 'bg-emerald-600 text-white shadow-sm' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                                    ? 'bg-accent-green text-white shadow-sm' : 'bg-accent-green/10 text-accent-green border border-emerald-200 hover:bg-emerald-100'
                                 } disabled:opacity-50`}>
                                 {saving === slot.slotId ? '...' : '✅ Kann'}
                               </button>
@@ -339,7 +339,7 @@ export default function KalenderPage() {
                                 onClick={() => handleVerfuegbarkeit(slot.slotId, 'nicht_verfuegbar')}
                                 className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all active:scale-[0.98] ${
                                   slot.meineVerfuegbarkeit === 'nicht_verfuegbar'
-                                    ? 'bg-red-600 text-white shadow-sm' : 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
+                                    ? 'bg-accent-red text-white shadow-sm' : 'bg-accent-red/10 text-accent-red border border-red-200 hover:bg-red-100'
                                 } disabled:opacity-50`}>
                                 {saving === slot.slotId ? '...' : '❌ Kann nicht'}
                               </button>

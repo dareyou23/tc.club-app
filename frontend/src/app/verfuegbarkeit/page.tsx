@@ -135,7 +135,7 @@ export default function VerfuegbarkeitPage() {
   }
 
   function getSlotColor(count: number): string {
-    if (count < 4) return 'bg-red-50 border-red-400';
+    if (count < 4) return 'bg-accent-red/10 border-red-400';
     if (count % 2 !== 0) return 'bg-orange-50 border-orange-400';
     return 'bg-green-50 border-green-400';
   }
@@ -149,18 +149,18 @@ export default function VerfuegbarkeitPage() {
     <ProtectedRoute>
       <h1 className="text-2xl font-bold mb-4">Meine Verfügbarkeit</h1>
       {loading ? (
-        <p className="text-gray-500">Laden...</p>
+        <p className="theme-text-muted">Laden...</p>
       ) : plaetze.length === 0 && saisonPlaetze.length === 0 ? (
-        <p className="text-gray-500">Keine Trainingsplätze in der aktuellen Saison.</p>
+        <p className="theme-text-muted">Keine Trainingsplätze in der aktuellen Saison.</p>
       ) : (
         <div className="space-y-6">
           {/* Saisonplanungs-Plätze als Hinweis */}
           {saisonPlaetze.map(p => (
-            <div key={p.id} className="bg-white rounded-lg shadow p-4 border-l-4 border-purple-400">
+            <div key={p.id} className="card rounded-lg shadow p-4 border-l-4 border-purple-400">
               <div className="flex justify-between items-start">
                 <div>
                   <h2 className="font-semibold text-lg mb-1">{p.name}</h2>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm theme-text-muted">
                     {WOCHENTAGE[p.wochentag]} {p.uhrzeit}{p.uhrzeitBis ? `–${p.uhrzeitBis}` : ''} · {p.ort}
                     {p.trainerName ? ` · Trainer: ${p.trainerName}` : ' · ohne Trainer'}
                   </p>
@@ -170,20 +170,20 @@ export default function VerfuegbarkeitPage() {
                   📋 Planung →
                 </Link>
               </div>
-              <p className="text-xs text-gray-400 mt-2">Verfügbarkeit und Zuordnung über die Saisonplanung</p>
+              <p className="text-xs theme-text-subtle mt-2">Verfügbarkeit und Zuordnung über die Saisonplanung</p>
             </div>
           ))}
 
           {plaetze.map(p => (
-            <div key={p.id} className="bg-white rounded-lg shadow p-4">
+            <div key={p.id} className="card rounded-lg shadow p-4">
               <h2 className="font-semibold text-lg mb-1">{p.name}</h2>
-              <p className="text-sm text-gray-500 mb-3">
+              <p className="text-sm theme-text-muted mb-3">
                 {WOCHENTAGE[p.wochentag]} {p.uhrzeit}{p.uhrzeitBis ? `–${p.uhrzeitBis}` : ''} · {p.ort}
                 {p.anzahlPlaetze > 1 ? ` · ${p.anzahlPlaetze} Plätze` : ''}
               </p>
 
               {!slotsByPlatz[p.id]?.length ? (
-                <p className="text-gray-400 text-sm">Keine kommenden Termine.</p>
+                <p className="theme-text-subtle text-sm">Keine kommenden Termine.</p>
               ) : (
                 <div className="space-y-3">
                   {slotsByPlatz[p.id].map(slot => (
@@ -193,12 +193,12 @@ export default function VerfuegbarkeitPage() {
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="font-semibold">{formatDatum(slot.datum)}</p>
-                          <p className="text-sm text-gray-600">{slot.uhrzeit} Uhr</p>
+                          <p className="text-sm theme-text-muted">{slot.uhrzeit} Uhr</p>
                         </div>
                         <div className="text-right">
                           <div className="flex flex-col items-end gap-1">
                             <span className={`text-xs px-2 py-1 rounded font-medium ${
-                              slot.verfuegbarCount < 4 ? 'bg-red-100 text-red-700' :
+                              slot.verfuegbarCount < 4 ? 'bg-red-100 text-accent-red' :
                               slot.verfuegbarCount % 2 !== 0 ? 'bg-orange-100 text-orange-700' :
                               'bg-green-100 text-green-700'
                             }`}>
@@ -209,7 +209,7 @@ export default function VerfuegbarkeitPage() {
                               <button
                                 type="button"
                                 onClick={() => setExpandedAbgelehnt(expandedAbgelehnt === slot.id ? null : slot.id)}
-                                className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                className="text-xs px-2 py-1 rounded theme-btn-inactive theme-text-muted hover:bg-gray-200"
                               >
                                 {slot.abgelehntCount} abgelehnt
                               </button>
@@ -220,22 +220,22 @@ export default function VerfuegbarkeitPage() {
 
                       {/* Verfügbare Spieler */}
                       {slot.verfuegbareSpieler.length > 0 && (
-                        <p className="text-xs text-gray-500 mt-2">
+                        <p className="text-xs theme-text-muted mt-2">
                           {slot.verfuegbareSpieler.join(', ')}
                         </p>
                       )}
 
                       {/* Abgelehnte Spieler aufklappbar */}
                       {expandedAbgelehnt === slot.id && slot.abgelehntSpieler.length > 0 && (
-                        <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
+                        <div className="mt-2 p-2 theme-btn-inactive rounded text-xs theme-text-muted">
                           <p className="font-medium mb-1">Können nicht:</p>
                           {slot.abgelehntSpieler.join(', ')}
                         </div>
                       )}
 
                       {/* Zwei Buttons: Kann + Kann nicht */}
-                      <div className="mt-3 pt-3 border-t border-gray-200">
-                        <p className="text-xs text-gray-500 mb-2">
+                      <div className="mt-3 pt-3 border-t border-dove-300/30">
+                        <p className="text-xs theme-text-muted mb-2">
                           {slot.meineVerfuegbarkeit === 'verfuegbar' ? '✅ Du kannst' :
                            slot.meineVerfuegbarkeit === 'nicht_verfuegbar' ? '❌ Kannst nicht' :
                            '❓ Noch offen'}
@@ -259,8 +259,8 @@ export default function VerfuegbarkeitPage() {
                             onClick={() => setVerfuegbarkeit(slot.id, p.id, 'nicht_verfuegbar')}
                             className={`flex-1 py-2 rounded text-sm font-medium transition-colors ${
                               slot.meineVerfuegbarkeit === 'nicht_verfuegbar'
-                                ? 'bg-red-600 text-white'
-                                : 'bg-red-50 text-red-700 border border-red-300 hover:bg-red-100'
+                                ? 'bg-accent-red text-white'
+                                : 'bg-accent-red/10 text-accent-red border border-red-300 hover:bg-red-100'
                             } disabled:opacity-50`}
                           >
                             {updating === slot.id ? '...' : '❌ Kann nicht'}

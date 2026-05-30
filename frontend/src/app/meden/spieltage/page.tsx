@@ -85,8 +85,8 @@ export default function MedenSpieltagePage() {
 
     const borderColor = zuWenig ? 'border-red-400' : 'border-emerald-400';
     const countBadge = zuWenig
-      ? 'bg-red-100 text-red-700'
-      : 'bg-emerald-100 text-emerald-700';
+      ? 'bg-red-100 text-accent-red'
+      : 'bg-emerald-100 text-accent-green';
 
     return (
       <div key={st.id} className={`card-accent p-5 ${borderColor}`}>
@@ -94,11 +94,11 @@ export default function MedenSpieltagePage() {
         <div className="flex justify-between items-start mb-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="badge bg-blue-100 text-blue-700">M{st.mannschaft}</span>
-              <span className="text-xs text-gray-400">Nr. {st.nr}</span>
+              <span className="badge bg-blue-100 theme-link">M{st.mannschaft}</span>
+              <span className="text-xs theme-text-subtle">Nr. {st.nr}</span>
             </div>
-            <p className="font-semibold text-gray-900">{formatDatum(st.datum)} · {st.uhrzeit}</p>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="font-semibold theme-text">{formatDatum(st.datum)} · {st.uhrzeit}</p>
+            <p className="text-sm theme-text-muted mt-0.5">
               {st.heimspiel ? '🏠 Heim' : '🚗 Auswärts'} vs {st.gegner}
             </p>
           </div>
@@ -107,7 +107,7 @@ export default function MedenSpieltagePage() {
               {zusagen.length}/6
             </span>
             <button type="button" onClick={() => downloadICS(st)}
-              className="p-2 rounded-lg bg-gray-50 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+              className="p-2 rounded-lg theme-btn-inactive theme-text-subtle hover:bg-blue-50 hover:theme-link transition-colors"
               title="Kalender-Download">
               📅
             </button>
@@ -117,9 +117,9 @@ export default function MedenSpieltagePage() {
         {/* Status-Buttons */}
         <div className="flex gap-2 mb-4">
           {([
-            { value: 'ja' as VerfStatus, label: '✅ Dabei', active: 'bg-emerald-600 text-white shadow-sm', inactive: 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100' },
-            { value: 'vielleicht' as VerfStatus, label: '❓ Unsicher', active: 'bg-amber-500 text-white shadow-sm', inactive: 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100' },
-            { value: 'nein' as VerfStatus, label: '❌ Nein', active: 'bg-red-600 text-white shadow-sm', inactive: 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100' },
+            { value: 'ja' as VerfStatus, label: '✅ Dabei', active: 'bg-accent-green text-white shadow-sm', inactive: 'bg-accent-green/10 text-accent-green border border-emerald-200 hover:bg-emerald-100' },
+            { value: 'vielleicht' as VerfStatus, label: '❓ Unsicher', active: 'bg-accent-yellow text-white shadow-sm', inactive: 'bg-accent-yellow/10 text-accent-yellow border border-amber-200 hover:bg-amber-100' },
+            { value: 'nein' as VerfStatus, label: '❌ Nein', active: 'bg-accent-red text-white shadow-sm', inactive: 'bg-accent-red/10 text-accent-red border border-red-200 hover:bg-red-100' },
           ]).map(btn => (
             <button key={btn.value} type="button"
               onClick={() => { setStatus(st.id, btn.value); if (btn.value === 'ja') downloadICS(st); }}
@@ -133,11 +133,11 @@ export default function MedenSpieltagePage() {
 
         {/* Zusagen */}
         {zusagen.length > 0 && (
-          <div className="pt-3 border-t border-gray-100">
+          <div className="pt-3 border-t border-dove-200/30">
             <p className="section-title mb-2">Dabei ({zusagen.length})</p>
             <div className="flex flex-wrap gap-1.5">
               {zusagen.map(s => (
-                <span key={s.id} className="badge bg-emerald-50 text-emerald-700">
+                <span key={s.id} className="badge bg-accent-green/10 text-accent-green">
                   {s.vorname} {s.name}
                 </span>
               ))}
@@ -151,7 +151,7 @@ export default function MedenSpieltagePage() {
             <p className="section-title mb-2">Unsicher ({unsichere.length})</p>
             <div className="flex flex-wrap gap-1.5">
               {unsichere.map(s => (
-                <span key={s.id} className="badge bg-amber-50 text-amber-600">
+                <span key={s.id} className="badge bg-accent-yellow/10 text-accent-yellow">
                   {s.vorname} {s.name}
                 </span>
               ))}
@@ -172,17 +172,17 @@ export default function MedenSpieltagePage() {
         {/* Header + Filter */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Meden-Spieltage</h1>
-            <p className="text-gray-500 mt-1">Klicke auf deinen Status für jeden Spieltag</p>
+            <h1 className="text-2xl font-bold theme-text">Meden-Spieltage</h1>
+            <p className="theme-text-muted mt-1">Klicke auf deinen Status für jeden Spieltag</p>
           </div>
-          <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+          <div className="flex gap-1 theme-btn-inactive p-1 rounded-lg">
             {[null, 1, 2, 3, 4].map(m => (
               <button key={m ?? 'alle'} type="button"
                 onClick={() => setFilterMannschaft(m)}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                   filterMannschaft === m
-                    ? 'bg-white text-blue-700 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'card theme-link shadow-sm'
+                    : 'theme-text-muted hover:theme-text-muted'
                 }`}>
                 {m === null ? 'Alle' : `M${m}`}
               </button>
@@ -203,9 +203,9 @@ export default function MedenSpieltagePage() {
         {/* Trennlinie */}
         {kernFiltered.length > 0 && andereFiltered.length > 0 && (
           <div className="relative">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-dove-300/30" /></div>
             <div className="relative flex justify-center">
-              <span className="bg-[#f8fafc] px-4 text-xs text-gray-400 uppercase tracking-wider">Weitere Mannschaften</span>
+              <span className="theme-body px-4 text-xs theme-text-subtle uppercase tracking-wider">Weitere Mannschaften</span>
             </div>
           </div>
         )}

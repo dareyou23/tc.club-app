@@ -44,13 +44,13 @@ export default function VerwaltungPlaetzePage() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Trainingszeiten verwalten</h1>
         <Link href="/verwaltung/plaetze/neu"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
+          className="btn-primary px-4 py-2 rounded hover:bg-accent-blue text-sm">
           + Neue Trainingszeit
         </Link>
       </div>
 
       {loading ? (
-        <p className="text-gray-500">Laden...</p>
+        <p className="theme-text-muted">Laden...</p>
       ) : (
         <div className="space-y-6">
           {/* Plätze nach Saison gruppieren */}
@@ -74,21 +74,21 @@ export default function VerwaltungPlaetzePage() {
               const saisonPlaetze = grouped.get(saisonId) || [];
               return (
                 <div key={saisonId}>
-                  <h2 className="text-lg font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <h2 className="text-lg font-semibold theme-text-muted mb-2 flex items-center gap-2">
                     {saison ? saison.name : 'Ohne Saison'}
                     {saison?.status === 'aktiv' && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">laufend</span>}
-                    {saison?.status === 'geplant' && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">geplant</span>}
+                    {saison?.status === 'geplant' && <span className="text-xs bg-blue-100 theme-link px-2 py-0.5 rounded">geplant</span>}
                   </h2>
                   <div className="space-y-3">
                     {saisonPlaetze.map(p => (
-                      <div key={p.id} className="bg-white rounded-lg shadow p-4 flex justify-between items-center">
+                      <div key={p.id} className="card rounded-lg shadow p-4 flex justify-between items-center">
                         <div>
                           <h3 className="font-semibold">{p.name}</h3>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm theme-text-muted">
                             {WOCHENTAGE[p.wochentag]} {p.uhrzeit}{p.uhrzeitBis ? `–${p.uhrzeitBis}` : ''} · {p.ort}
                             {p.trainerName ? ` · Trainer: ${p.trainerName}` : ''}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs theme-text-muted">
                             Gruppe: {p.gruppengroesse} Spieler · {p.dauer}min
                             {p.nurHallentraining ? ' · 🏠 Nur Halle' : ''}
                             {p.platzTyp === 'saisonplanung' ? ' · 📋 Saisonplanung' : ''}
@@ -96,9 +96,9 @@ export default function VerwaltungPlaetzePage() {
                         </div>
                         <div className="flex gap-2">
                           <Link href={`/verwaltung/plaetze/${p.id}`}
-                            className="text-blue-600 hover:underline text-sm">Details</Link>
+                            className="theme-link hover:underline text-sm">Details</Link>
                           <button type="button" onClick={() => handleDelete(p.id, p.name)}
-                            className="text-red-600 hover:underline text-sm">Löschen</button>
+                            className="text-accent-red hover:underline text-sm">Löschen</button>
                         </div>
                       </div>
                     ))}
